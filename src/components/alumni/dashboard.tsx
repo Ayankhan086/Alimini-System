@@ -15,6 +15,8 @@ import {
   CalendarCheck,
   CreditCard,
 } from 'lucide-react'
+import Link from 'next/link'
+import { AvatarViewer } from '@/components/profile/avatar-viewer'
 
 // Mock Data for the prototype based on the image
 const upcomingEvents = [
@@ -45,26 +47,69 @@ const recentActivity = [
     icon: CheckCircle2,
     iconColor: 'text-green-600',
     iconBg: 'bg-green-100',
-    text: 'Updated profile — Employer set to TechCorp Ltd.',
+    text: 'Updated profile successfully.',
     time: '1d ago',
   },
   {
     icon: CalendarCheck,
     iconColor: 'text-blue-600',
     iconBg: 'bg-blue-100',
-    text: 'Registered for AI Workshop (28 June, Main Auditorium).',
+    text: 'Registered for AI Workshop.',
     time: '2d ago',
-  },
-  {
-    icon: CreditCard,
-    iconColor: 'text-amber-600',
-    iconBg: 'bg-amber-100',
-    text: 'Membership approved — Regular Member, Active.',
-    time: '25d ago',
   },
 ]
 
-export function AlumniDashboard() {
+export function AlumniDashboard({ alumniData }: { alumniData: any }) {
+  // 1. Dynamic Welcome Info
+  const initials = `${alumniData.firstName?.[0] || ''}${alumniData.lastName?.[0] || ''}`
+  const fullName = `${alumniData.firstName} ${alumniData.lastName}`
+  const formattedDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  
+  // 2. Profile Completion Algorithm
+  const fieldsToCheck = [
+    { key: 'phone', label: 'Phone Number' },
+    { key: 'cnic', label: 'CNIC' },
+    { key: 'currentEmployer', label: 'Current Employer' },
+    { key: 'jobTitle', label: 'Job Title' },
+    { key: 'industry', label: 'Industry' },
+    { key: 'city', label: 'City' },
+    { key: 'country', label: 'Country' },
+    { key: 'linkedinUrl', label: 'LinkedIn' },
+  ]
+
+  let filledCount = 0
+  const missingLabels: string[] = []
+
+  fieldsToCheck.forEach(field => {
+    if (alumniData[field.key]) {
+      filledCount++
+    } else {
+      missingLabels.push(field.label)
+    }
+  })
+
+  // Add skills check
+  if (alumniData.skills && alumniData.skills.length > 0) {
+    filledCount++
+  } else {
+    missingLabels.push('Skills')
+  }
+
+  // Calculate percentage (Base 50% for core academic info already filled, remaining 50% for the 9 fields above)
+  const totalFields = fieldsToCheck.length + 1 // +1 for skills
+  const completionPercentage = Math.round(50 + (filledCount / totalFields) * 50)
+  
+  const missingText = missingLabels.length > 0 
+    ? `Missing: ${missingLabels.slice(0, 3).join(', ')}${missingLabels.length > 3 ? '...' : ''}`
+    : 'Your profile is completely up to date!'
+
+  // 3. Membership Status
+  const statusColor = alumniData.verificationStatus === 'APPROVED' ? 'text-emerald-600' : 
+                      alumniData.verificationStatus === 'REJECTED' ? 'text-red-600' : 'text-amber-500'
+  
+  // Format member since year
+  const memberSince = new Date(alumniData.verifiedAt || alumniData.createdAt).getFullYear()
+
   return (
     <div className="flex h-screen bg-gray-50/50">
       <Sidebar />
@@ -74,9 +119,15 @@ export function AlumniDashboard() {
         <header className="flex items-center justify-between px-8 py-4 bg-white border-b border-gray-200">
           <h2 className="text-2xl font-bold text-[#1a365d]">Dashboard</h2>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#1a365d] text-white flex items-center justify-center font-bold text-sm">
-              MK
-            </div>
+            <Link href="/profile">
+              <AvatarViewer 
+                avatarUrl={alumniData.avatarUrl} 
+                initials={initials} 
+                fullName={fullName} 
+                size="sm" 
+                interactive={false}
+              />
+            </Link>
           </div>
         </header>
 
@@ -87,13 +138,16 @@ export function AlumniDashboard() {
             {/* Welcome Banner */}
             <div className="bg-[#1a365d] rounded-2xl p-6 md:p-8 text-white flex items-center shadow-md relative overflow-hidden">
               <div className="flex items-center gap-5 relative z-10">
-                <div className="w-16 h-16 rounded-full border-2 border-yellow-400 bg-[#1a365d] text-white flex items-center justify-center font-bold text-xl shadow-inner">
-                  MK
-                </div>
+                <AvatarViewer 
+                  avatarUrl={alumniData.avatarUrl} 
+                  initials={initials} 
+                  fullName={fullName} 
+                  size="lg" 
+                />
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold mb-1">Welcome Back, Muhammad Khan! 👋</h1>
-                  <p className="text-blue-200 text-sm md:text-base">Computer Science &nbsp;•&nbsp; Batch 2023</p>
-                  <p className="text-blue-300 text-xs mt-2">26 June 2026</p>
+                  <h1 className="text-2xl md:text-3xl font-bold mb-1">Welcome Back, {alumniData.firstName}! 👋</h1>
+                  <p className="text-blue-200 text-sm md:text-base">{alumniData.program} &nbsp;•&nbsp; Batch {alumniData.graduationYear}</p>
+                  <p className="text-blue-300 text-xs mt-2">{formattedDate}</p>
                 </div>
               </div>
               {/* Decorative background element */}
@@ -107,13 +161,15 @@ export function AlumniDashboard() {
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="font-semibold text-gray-700">Profile Completion</h3>
-                    <Button className="bg-[#1a365d] hover:bg-[#12284c] text-white h-9 text-xs">Complete Profile</Button>
+                    <Link href="/profile/edit">
+                      <Button className="bg-[#1a365d] hover:bg-[#12284c] text-white h-9 text-xs">Complete Profile</Button>
+                    </Link>
                   </div>
-                  <div className="mb-2 text-4xl font-bold text-gray-900">80%</div>
+                  <div className="mb-2 text-4xl font-bold text-gray-900">{completionPercentage}%</div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5 mb-3">
-                    <div className="bg-emerald-500 h-2.5 rounded-full" style={{ width: '80%' }}></div>
+                    <div className="bg-emerald-500 h-2.5 rounded-full transition-all duration-1000" style={{ width: `${completionPercentage}%` }}></div>
                   </div>
-                  <p className="text-xs text-gray-500">Missing: Phone Number, LinkedIn, Current Employer</p>
+                  <p className="text-xs text-gray-500">{missingText}</p>
                 </CardContent>
               </Card>
 
@@ -131,14 +187,14 @@ export function AlumniDashboard() {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Status</p>
-                      <p className="font-semibold text-emerald-600">Active</p>
+                      <p className={`font-semibold ${statusColor}`}>{alumniData.verificationStatus}</p>
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Fee Paid</p>
-                      <p className="font-semibold text-emerald-600">Yes</p>
+                      <p className="font-semibold text-gray-400">N/A</p>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500">Member Since: 2023</p>
+                  <p className="text-xs text-gray-500">Member Since: {memberSince}</p>
                 </CardContent>
               </Card>
             </div>
@@ -147,18 +203,22 @@ export function AlumniDashboard() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                <Button className="w-full h-12 bg-[#254f85] hover:bg-[#1c3a63] text-white shadow-sm font-medium">
-                  <Edit className="h-4 w-4 mr-2" /> Edit Profile
-                </Button>
+                <Link href="/profile/edit">
+                  <Button className="w-full h-12 bg-[#254f85] hover:bg-[#1c3a63] text-white shadow-sm font-medium">
+                    <Edit className="h-4 w-4 mr-2" /> Edit Profile
+                  </Button>
+                </Link>
                 <Button className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white shadow-sm font-medium">
                   <Users className="h-4 w-4 mr-2" /> Alumni Directory
                 </Button>
                 <Button className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm font-medium">
                   <CalendarDays className="h-4 w-4 mr-2" /> Browse Events
                 </Button>
-                <Button className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-white shadow-sm font-medium">
-                  <UserCircle className="h-4 w-4 mr-2" /> View Profile
-                </Button>
+                <Link href="/profile">
+                  <Button className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-white shadow-sm font-medium">
+                    <UserCircle className="h-4 w-4 mr-2" /> View Profile
+                  </Button>
+                </Link>
               </div>
             </div>
 
@@ -196,7 +256,7 @@ export function AlumniDashboard() {
                       ))}
                     </div>
                     <div className="p-4 border-t border-gray-100">
-                      <a href="/dashboard/events" className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                      <a href="#" className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
                         View All Events &rarr;
                       </a>
                     </div>
@@ -220,7 +280,7 @@ export function AlumniDashboard() {
                       ))}
                     </div>
                     <div className="p-4 border-t border-gray-100">
-                      <a href="/dashboard/announcements" className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                      <a href="#" className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
                         See all announcements &rarr;
                       </a>
                     </div>
