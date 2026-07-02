@@ -1,0 +1,146 @@
+// =====================================================================
+// UETMAA Alumni Management System — Prisma Schema (MVP)
+// =====================================================================
+// Built by analyzing Pages 1–5 of the Figma prototype field-by-field:
+//   Page 1  Login                      — email, password
+//   Page 2  Registration               — personal + educational fields
+//   Page 3  Alumni Dashboard           — profile completion, membership
+//                                         card; Events / Announcements /
+//                                         Activity sections use mock data
+//   Page 4  My Profile                 — academic/career/skills/privacy
+//   Page 5  Admin Dashboard            — verification stats + queue
+//
+// Every field below traces to something actually shown on one of these
+// screens. Nothing here is speculative or added "just in case."
+// =====================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------------------
+
+enum Role {
+  ALUMNI
+  ADMIN
+}
+
+// Page 5 — ORIC verification workflow (one-time gate)
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+// Page 3 — Membership card "TYPE" (Art. 10)
+enum MembershipType {
+  REGULAR
+  LIFETIME
+}
+
+// Membership lifecycle (Art. 15–16)
+enum MembershipStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// ---------------------------------------------------------------------
+// USER  (Page 1 — Login)
+// ---------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(ALUMNI)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  alumni Alumni?
+}
+
+// ---------------------------------------------------------------------
+// ALUMNI PROFILE  (Pages 2, 4, 5)
+// ---------------------------------------------------------------------
+
+model Alumni {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Personal Information — Page 2
+  firstName String // Page 2: "First name"
+  lastName  String // Page 2: "Last name"
+  cnic      String? @unique // Page 2: "CNIC number"
+  phone     String? // Page 2: "Phone number"
+  avatarUrl String? // Page 4: profile photo
+
+  // Educational Information — Page 2, Page 4 (Academic Information)
+  degreeLevel    String // Page 2: "Degree level" (e.g. "BSc")
+  program        String // Page 2: "Program name" / Page 4: "Department"
+  admissionYear  Int // Page 4: "Batch: 2019 – 2023" (start year)
+  graduationYear Int // Page 2: "Graduation year"
+  rollNumber     String @unique // Page 2 + Page 5: ORIC roll number
+  cgpa           Float? // Page 4: "CGPA: 3.72 / 4.0"
+
+  // Career Information — Page 4
+  currentEmployer String? // Page 4: "Employer"
+  jobTitle        String? // Page 4: "Title"
+  industry        String? // Page 4: "Industry"
+  linkedinUrl     String? // Page 3: shown in profile completion missing list
+  city            String? // Page 4: "Location" (city part)
+  country         String? // Page 4: "Location" (country part)
+
+  // Skills & Certifications — Page 4 (simple tag list)
+  skills String[]
+
+  // Privacy — Page 4
+  showInDirectory Boolean @default(true) // visible to other alumni in directory
+
+  // Verification — Page 5 (ORIC one-time credential check, Art. 20.3)
+  verificationStatus VerificationStatus @default(PENDING)
+  rejectionReason    String? // reason when admin rejects
+  verifiedAt         DateTime? // timestamp when admin approves
+  verifiedBy         String? // admin user ID who performed verification
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  membership Membership? // created after verification is approved
+}
+
+// ---------------------------------------------------------------------
+// MEMBERSHIP  (Page 3 — dashboard membership card, Art. 10–16)
+// ---------------------------------------------------------------------
+// Separate from Alumni because:
+//   1. Verification (are you a real graduate?) ≠ Membership (what type, fees, standing)
+//   2. Membership only begins AFTER verification is approved
+//   3. Membership has its own lifecycle (active → inactive → suspended)
+
+model Membership {
+  id       String @id @default(cuid())
+  alumniId String @unique
+  alumni   Alumni @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+
+  // Page 3 — "TYPE: Regular"
+  type MembershipType @default(REGULAR)
+
+  // Page 3 — "STATUS: Active" (Art. 15)
+  status MembershipStatus @default(ACTIVE)
+
+  // Page 3 — "FEE PAID: Yes/No" (Art. 11)
+  feePaid Boolean @default(false)
+
+  // Page 3 — "Member Since: 2023"
+  startDate DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
