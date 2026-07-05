@@ -36,43 +36,44 @@ export function Sidebar() {
   const router = useRouter()
 
   return (
-    <div className="flex flex-col w-64 bg-[#1a365d] text-gray-300 h-full border-r border-[#12284c]">
-      <div className="p-6 border-b border-[#234572]">
-        <h1 className="text-2xl font-bold text-white tracking-tight">AMS</h1>
-        <p className="text-xs text-blue-200/70 mt-1">Alumni Management</p>
+    <div className="flex flex-col w-64 bg-slate-50 dark:bg-[#1a365d] text-slate-700 dark:text-gray-300 h-full border-r border-gray-200 dark:border-[#12284c] transition-colors">
+      <div className="p-6 border-b border-gray-200 dark:border-[#234572] transition-colors">
+        <h1 className="text-2xl font-bold text-[#1a365d] dark:text-white tracking-tight transition-colors">AMS</h1>
+        <p className="text-xs text-slate-500 dark:text-blue-200/70 mt-1 transition-colors">Alumni Management</p>
       </div>
-
       <nav className="flex-1 overflow-y-auto py-4">
-        {menuItems.map((item, index) => {
-          const isActive = pathname === item.href
-          return (
-            <Link
-              key={index}
-              href={item.href}
-              className={cn(
-                'flex items-center px-6 py-3 transition-colors text-[15px]',
-                isActive
-                  ? 'bg-[#152c4d] text-white border-l-4 border-white'
-                  : 'hover:bg-[#152c4d]/50 hover:text-white border-l-4 border-transparent'
-              )}
-            >
-              <item.icon className={cn("h-5 w-5 mr-3 flex-shrink-0", isActive ? "text-white" : "text-gray-400")} />
-              <span>{item.label}</span>
-            </Link>
-          )
-        })}
+        <ul className="space-y-1 px-3">
+          {menuItems.map((item, index) => {
+            const isActive = pathname === item.href
+            return (
+              <li key={index}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    'flex items-center px-4 py-3 rounded-lg transition-colors',
+                    isActive
+                      ? 'bg-blue-50 dark:bg-[#152c4d] text-[#1a365d] dark:text-white border-l-4 border-[#eab308] dark:border-white font-medium'
+                      : 'hover:bg-slate-100 dark:hover:bg-[#152c4d]/50 hover:text-slate-900 dark:hover:text-white border-l-4 border-transparent text-slate-600 dark:text-gray-300'
+                  )}
+                >
+                  <item.icon className={cn('h-5 w-5 mr-3', isActive ? "text-[#eab308] dark:text-[#e6c15c]" : "text-slate-400 dark:text-gray-400")} />
+                  {item.label}
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
       </nav>
-
-      <div className="p-4 border-t border-[#234572]">
+      <div className="p-4 border-t border-gray-200 dark:border-[#12284c] transition-colors">
         <button
           onClick={async () => {
             await signOut({ redirect: false })
             router.push('/login')
           }}
-          className="flex w-full items-center px-2 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-[#152c4d]/50 transition-colors"
+          className="flex w-full items-center px-2 py-3 rounded-lg text-slate-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-white hover:bg-red-50 dark:hover:bg-[#152c4d]/50 transition-colors"
         >
-          <LogOut className="h-5 w-5 mr-3 flex-shrink-0 text-red-400" />
-          <span>Logout</span>
+          <LogOut className="h-5 w-5 mr-3" />
+          Logout
         </button>
       </div>
     </div>

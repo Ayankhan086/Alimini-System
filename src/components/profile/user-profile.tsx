@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import { AvatarViewer } from '@/components/profile/avatar-viewer'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 function ProfileContent({ initialData }: { initialData: any }) {
   const searchParams = useSearchParams()
@@ -61,9 +62,10 @@ function ProfileContent({ initialData }: { initialData: any }) {
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
       {/* Top Navbar */}
-      <header className="flex items-center justify-between px-8 py-5 bg-white shadow-sm border-b border-gray-100 z-10">
-        <h2 className="text-xl font-bold text-gray-900">My Profile</h2>
-        <div className="flex items-center gap-3">
+      <header className="flex items-center justify-between px-8 py-5 bg-white dark:bg-[#1a2b4c] shadow-sm border-b border-gray-100 dark:border-[#2a3b5c] z-10 transition-colors">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">My Profile</h2>
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
           <AvatarViewer 
             avatarUrl={initialData.avatarUrl} 
             initials={initials} 
@@ -76,27 +78,28 @@ function ProfileContent({ initialData }: { initialData: any }) {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto p-8 relative">
-        <div className="max-w-[1000px] mx-auto space-y-6 pb-20">
+        <div className="max-w-[1000px] mx-auto space-y-6 pb-20 anim-fadeInUp">
           
           {/* Main Banner */}
-          <div className="bg-[#1e293b] rounded-xl p-8 flex flex-col md:flex-row md:items-center justify-between shadow-md relative overflow-hidden">
+          <div className="glass-card rounded-xl p-8 flex flex-col md:flex-row md:items-center justify-between shadow-md relative overflow-hidden transition-colors">
             <div className="flex items-center gap-6 relative z-10">
               <AvatarViewer 
                 avatarUrl={initialData.avatarUrl} 
                 initials={initials} 
                 fullName={fullName} 
                 size="lg" 
+                priority={true}
               />
               <div className="flex flex-col">
-                <h1 className="text-2xl font-bold text-white tracking-tight">{fullName}</h1>
-                <p className="text-gray-300 text-sm mt-1">{jobTitle} {employer} {location}</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight transition-colors">{fullName}</h1>
+                <p className="text-gray-500 dark:text-gray-300 text-sm mt-1 transition-colors">{jobTitle} {employer} {location}</p>
                 
                 {/* Progress Bar */}
                 <div className="mt-4 max-w-sm w-full min-w-[300px]">
-                  <div className="flex justify-between text-xs text-gray-400 mb-1.5">
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5 transition-colors">
                     <span>Profile Completion: {completionPercentage}%</span>
                   </div>
-                  <div className="w-full bg-[#334155] rounded-full h-1.5">
+                  <div className="w-full bg-gray-200 dark:bg-[#334155] rounded-full h-1.5 transition-colors">
                     <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${completionPercentage}%` }}></div>
                   </div>
                 </div>
@@ -105,7 +108,7 @@ function ProfileContent({ initialData }: { initialData: any }) {
             
             <div className="mt-6 md:mt-0 relative z-10 self-start md:self-auto">
               <Link href="/profile/edit">
-                <Button className="bg-[#3b82f6] hover:bg-blue-600 text-white h-10 px-5 shadow-sm rounded-lg font-medium">
+                <Button className="btn btn-primary h-10 px-5 shadow-sm rounded-lg">
                   <Edit2 className="h-4 w-4 mr-2" /> Edit Profile
                 </Button>
               </Link>
@@ -113,59 +116,59 @@ function ProfileContent({ initialData }: { initialData: any }) {
           </div>
 
           {/* Information Cards Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 delay-100 anim-fadeInUp">
             
             {/* Academic Information */}
-            <Card className="rounded-xl shadow-sm border-gray-200">
+            <Card className="rounded-xl shadow-sm border-gray-200 dark:border-slate-800 dark:bg-slate-900 transition-colors card-hover">
               <CardContent className="p-0">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="font-semibold text-[#1a365d] text-sm">Academic Information</h3>
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 transition-colors">
+                  <h3 className="font-semibold text-[#1a365d] dark:text-[#e6c15c] text-sm transition-colors">Academic Information</h3>
                 </div>
                 <div className="p-6 grid grid-cols-2 gap-y-6 gap-x-4">
                   <div>
-                    <p className="text-[11px] text-blue-500 mb-1">Degree:</p>
-                    <p className="font-semibold text-gray-900 text-sm">{initialData.degreeLevel || 'N/A'}</p>
+                    <p className="text-[11px] text-blue-500 dark:text-blue-400 mb-1 transition-colors">Degree:</p>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm transition-colors">{initialData.degreeLevel || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-blue-500 mb-1">Department:</p>
-                    <p className="font-semibold text-gray-900 text-sm">{initialData.program || 'N/A'}</p>
+                    <p className="text-[11px] text-blue-500 dark:text-blue-400 mb-1 transition-colors">Department:</p>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm transition-colors">{initialData.program || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-blue-500 mb-1">Batch:</p>
-                    <p className="font-semibold text-gray-900 text-sm">{initialData.admissionYear} – {initialData.graduationYear}</p>
+                    <p className="text-[11px] text-blue-500 dark:text-blue-400 mb-1 transition-colors">Batch:</p>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm transition-colors">{initialData.admissionYear} – {initialData.graduationYear}</p>
                   </div>
                   <div></div>
                   <div>
-                    <p className="text-[11px] text-blue-500 mb-1">CGPA:</p>
-                    <p className="font-semibold text-gray-900 text-sm">{initialData.cgpa || 'N/A'} / 4.0</p>
+                    <p className="text-[11px] text-blue-500 dark:text-blue-400 mb-1 transition-colors">CGPA:</p>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm transition-colors">{initialData.cgpa || 'N/A'} / 4.0</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Career Information */}
-            <Card className="rounded-xl shadow-sm border-gray-200">
+            <Card className="rounded-xl shadow-sm border-gray-200 dark:border-slate-800 dark:bg-slate-900 transition-colors card-hover">
               <CardContent className="p-0">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="font-semibold text-[#1a365d] text-sm">Career Information</h3>
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 transition-colors">
+                  <h3 className="font-semibold text-[#1a365d] dark:text-[#e6c15c] text-sm transition-colors">Career Information</h3>
                 </div>
                 <div className="p-6 grid grid-cols-2 gap-y-6 gap-x-4">
                   <div>
-                    <p className="text-[11px] text-blue-500 mb-1">Employer:</p>
-                    <p className="font-semibold text-gray-900 text-sm">{initialData.currentEmployer || 'N/A'}</p>
+                    <p className="text-[11px] text-blue-500 dark:text-blue-400 mb-1 transition-colors">Employer:</p>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm transition-colors">{initialData.currentEmployer || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-blue-500 mb-1">Location:</p>
-                    <p className="font-semibold text-gray-900 text-sm">{initialData.city && initialData.country ? `${initialData.city}, ${initialData.country}` : 'N/A'}</p>
+                    <p className="text-[11px] text-blue-500 dark:text-blue-400 mb-1 transition-colors">Location:</p>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm transition-colors">{initialData.city && initialData.country ? `${initialData.city}, ${initialData.country}` : 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-blue-500 mb-1">Title:</p>
-                    <p className="font-semibold text-gray-900 text-sm">{initialData.jobTitle || 'N/A'}</p>
+                    <p className="text-[11px] text-blue-500 dark:text-blue-400 mb-1 transition-colors">Title:</p>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm transition-colors">{initialData.jobTitle || 'N/A'}</p>
                   </div>
                   <div></div>
                   <div>
-                    <p className="text-[11px] text-blue-500 mb-1">Industry:</p>
-                    <p className="font-semibold text-gray-900 text-sm">{initialData.industry || 'N/A'}</p>
+                    <p className="text-[11px] text-blue-500 dark:text-blue-400 mb-1 transition-colors">Industry:</p>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm transition-colors">{initialData.industry || 'N/A'}</p>
                   </div>
                 </div>
               </CardContent>
@@ -174,25 +177,25 @@ function ProfileContent({ initialData }: { initialData: any }) {
           </div>
 
           {/* Skills & Certifications */}
-          <Card className="rounded-xl shadow-sm border-gray-200">
+          <Card className="rounded-xl shadow-sm border-gray-200 dark:border-slate-800 dark:bg-slate-900 transition-colors card-hover delay-200 anim-fadeInUp">
             <CardContent className="p-0">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <h3 className="font-semibold text-[#1a365d] text-sm">Skills & Certifications</h3>
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 transition-colors">
+                <h3 className="font-semibold text-[#1a365d] dark:text-[#e6c15c] text-sm transition-colors">Skills & Certifications</h3>
               </div>
               <div className="p-6">
                 <div className="flex flex-wrap gap-3 mb-5">
                   {initialData.skills && initialData.skills.length > 0 ? (
                     initialData.skills.map((skill: string, i: number) => (
-                      <span key={i} className="px-4 py-1.5 bg-[#f1f5f9] text-gray-600 rounded-full text-xs font-medium border border-gray-200 shadow-sm">
+                      <span key={i} className="px-4 py-1.5 bg-[#f1f5f9] dark:bg-slate-800 text-gray-600 dark:text-gray-300 rounded-full text-xs font-medium border border-gray-200 dark:border-slate-700 shadow-sm transition-colors">
                         {skill}
                       </span>
                     ))
                   ) : (
-                    <span className="text-sm text-gray-400 italic">No skills added yet.</span>
+                    <span className="text-sm text-gray-400 dark:text-gray-500 italic transition-colors">No skills added yet.</span>
                   )}
                 </div>
                 <Link href="/profile/edit">
-                  <Button variant="outline" className="h-8 text-xs text-[#1a365d] border-gray-200 hover:bg-gray-50 px-4 rounded-md">
+                  <Button variant="outline" className="h-8 text-xs text-[#1a365d] dark:text-gray-300 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 px-4 rounded-md transition-colors bg-transparent">
                     + Add Certification / Skill
                   </Button>
                 </Link>
@@ -216,10 +219,10 @@ function ProfileContent({ initialData }: { initialData: any }) {
 
 export function UserProfile({ initialData }: { initialData: any }) {
   return (
-    <div className="flex h-screen bg-[#f8fafc]">
+    <div className="flex h-screen bg-[#f8fafc] dark:bg-[#0B0F19] transition-colors">
       {/* Sidebar for Alumni */}
       <Sidebar />
-      <Suspense fallback={<div className="p-8">Loading profile...</div>}>
+      <Suspense fallback={<div className="p-8 dark:text-white transition-colors">Loading profile...</div>}>
         <ProfileContent initialData={initialData} />
       </Suspense>
     </div>

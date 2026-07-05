@@ -5,7 +5,7 @@ import { FaFacebookF, FaLinkedinIn, FaTwitter } from 'react-icons/fa'
 
 export function Footer() {
   return (
-    <footer className="bg-[#24426b] text-gray-300 border-t border-[#31517f]">
+    <footer className="bg-gray-50 dark:bg-[#24426b] text-slate-600 dark:text-gray-300 border-t border-gray-200 dark:border-[#31517f] transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Logo & Description */}
@@ -17,14 +17,15 @@ export function Footer() {
                   src="/UETM-IMAGES/UET-logo.webp"
                   alt="UET Logo"
                   fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-contain p-1"
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl sm:text-2xl font-bold text-white tracking-wide leading-none">
+                <span className="text-xl sm:text-2xl font-bold text-[#1a365d] dark:text-white tracking-wide leading-none transition-colors">
                   UET-MARDAN
                 </span>
-                <span className="text-[10px] sm:text-[8px] text-[#e6c15c] uppercase tracking-wider mt-1 pl-1">
+                <span className="text-[10px] sm:text-[8px] text-[#eab308] dark:text-[#e6c15c] uppercase tracking-wider mt-1 pl-1 transition-colors">
                   Alumni Management System
                 </span>
               </div>
@@ -37,35 +38,35 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-lg">Quick Links</h3>
+            <h3 className="text-slate-900 dark:text-white font-semibold mb-4 text-lg transition-colors">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/" className="hover:text-white transition-colors">
+                <Link href="/" className="hover:text-slate-900 dark:hover:text-white transition-colors">
                   Home
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-white transition-colors">
+                <Link href="/about" className="hover:text-slate-900 dark:hover:text-white transition-colors">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/leadership" className="hover:text-white transition-colors">
+                <Link href="/leadership" className="hover:text-slate-900 dark:hover:text-white transition-colors">
                   Leadership
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-white transition-colors">
+                <Link href="/contact" className="hover:text-slate-900 dark:hover:text-white transition-colors">
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="hover:text-white transition-colors">
+                <Link href="/login" className="hover:text-slate-900 dark:hover:text-white transition-colors">
                   Login
                 </Link>
               </li>
               <li>
-                <Link href="/register" className="hover:text-white transition-colors">
+                <Link href="/register" className="hover:text-slate-900 dark:hover:text-white transition-colors">
                   Register
                 </Link>
               </li>
@@ -74,21 +75,21 @@ export function Footer() {
 
           {/* Connect With Us */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-lg">Connect With Us</h3>
+            <h3 className="text-slate-900 dark:text-white font-semibold mb-4 text-lg transition-colors">Connect With Us</h3>
             <div className="flex space-x-3 mb-6">
-              <a href="#" className="w-8 h-8 rounded-full bg-[#31517f] flex items-center justify-center hover:bg-[#e6c15c] hover:text-[#1a2b4c] transition-colors">
+              <a href="#" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-[#31517f] text-slate-600 dark:text-gray-300 flex items-center justify-center hover:bg-[#1a365d] hover:text-white dark:hover:bg-[#e6c15c] dark:hover:text-[#1a2b4c] transition-colors">
                 <FaFacebookF className="w-4 h-4" />
               </a>
-              <a href="#" className="w-8 h-8 rounded-full bg-[#31517f] flex items-center justify-center hover:bg-[#e6c15c] hover:text-[#1a2b4c] transition-colors">
+              <a href="#" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-[#31517f] text-slate-600 dark:text-gray-300 flex items-center justify-center hover:bg-[#1a365d] hover:text-white dark:hover:bg-[#e6c15c] dark:hover:text-[#1a2b4c] transition-colors">
                 <FaLinkedinIn className="w-4 h-4" />
               </a>
-              <a href="#" className="w-8 h-8 rounded-full bg-[#31517f] flex items-center justify-center hover:bg-[#e6c15c] hover:text-[#1a2b4c] transition-colors">
+              <a href="#" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-[#31517f] text-slate-600 dark:text-gray-300 flex items-center justify-center hover:bg-[#1a365d] hover:text-white dark:hover:bg-[#e6c15c] dark:hover:text-[#1a2b4c] transition-colors">
                 <FaTwitter className="w-4 h-4" />
               </a>
             </div>
             <div>
-              <p className="text-sm text-gray-400 mb-1">Email</p>
-              <a href="mailto:oric@uetmardan.edu.pk" className="text-white hover:text-[#e6c15c] transition-colors text-sm">
+              <p className="text-sm text-slate-500 dark:text-gray-400 mb-1 transition-colors">Email</p>
+              <a href="mailto:oric@uetmardan.edu.pk" className="text-slate-900 dark:text-white hover:text-[#1a365d] dark:hover:text-[#e6c15c] transition-colors text-sm font-medium">
                 oric@uetmardan.edu.pk
               </a>
             </div>

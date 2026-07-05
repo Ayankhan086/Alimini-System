@@ -24,7 +24,7 @@ export function WhyJoinSection() {
   ]
 
   return (
-    <section className="bg-[#f3f4f6] dark:bg-slate-900 py-20 sm:py-28 px-4 sm:px-6 lg:px-8 border-b border-gray-200 dark:border-slate-800">
+    <section className="bg-[#f3f4f6] dark:bg-slate-900 py-20 sm:py-28 px-4 sm:px-6 lg:px-8 border-b border-gray-200 dark:border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 dark:text-white mb-16">
           Why Join?

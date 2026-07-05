@@ -114,6 +114,10 @@ model Alumni {
   updatedAt DateTime @updatedAt
 
   membership Membership? // created after verification is approved
+
+  @@index([verificationStatus])
+  @@index([graduationYear])
+  @@index([program])
 }
 
 // ---------------------------------------------------------------------

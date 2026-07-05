@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { Sidebar } from '@/components/alumni/sidebar'
 import { EditProfileForm } from '@/components/profile/edit-profile-form'
 
+import { ThemeToggle } from '@/components/theme-toggle'
+
 export const metadata: Metadata = {
   title: 'Edit Profile - Alumni Management System',
 }
@@ -27,14 +29,15 @@ export default async function EditProfilePage() {
   }
 
   return (
-    <div className="flex h-screen bg-[#f8fafc]">
+    <div className="flex h-screen bg-[#f8fafc] dark:bg-[#0B0F19] transition-colors">
       <Sidebar />
       
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
-        <header className="flex items-center justify-between px-8 py-5 bg-white shadow-sm border-b border-gray-100 z-10">
-          <h2 className="text-xl font-bold text-gray-900">Edit Profile</h2>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#1a365d] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+        <header className="flex items-center justify-between px-8 py-5 bg-white dark:bg-[#1a2b4c] shadow-sm border-b border-gray-100 dark:border-[#2a3b5c] z-10 transition-colors">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">Edit Profile</h2>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <div className="w-9 h-9 rounded-full bg-[#1a365d] dark:bg-[#e6c15c] text-white dark:text-[#1a2b4c] flex items-center justify-center font-bold text-xs shadow-sm transition-colors">
               {alumniData.firstName[0]}{alumniData.lastName[0]}
             </div>
           </div>

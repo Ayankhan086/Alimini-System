@@ -15,15 +15,15 @@ import Image from 'next/image'
 
 // Validation schema matching the backend
 const profileSchema = z.object({
-  avatarUrl: z.string().optional(),
-  currentEmployer: z.string().optional(),
-  jobTitle: z.string().optional(),
-  industry: z.string().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
-  linkedinUrl: z.string().url({ message: "Please enter a valid URL" }).or(z.literal('')).optional(),
-  phone: z.string().optional(),
-  skills: z.string().optional(), // We'll process this string into an array
+  avatarUrl: z.string().trim().url().max(500).optional().or(z.literal('')),
+  currentEmployer: z.string().trim().max(100).optional().or(z.literal('')),
+  jobTitle: z.string().trim().max(100).optional().or(z.literal('')),
+  industry: z.string().trim().max(100).optional().or(z.literal('')),
+  city: z.string().trim().max(100).optional().or(z.literal('')),
+  country: z.string().trim().max(100).optional().or(z.literal('')),
+  linkedinUrl: z.string().trim().url("Please enter a valid LinkedIn URL").max(200).optional().or(z.literal('')),
+  phone: z.string().trim().regex(/^\+?[0-9]{10,15}$/, "Phone must be a valid number with 10-15 digits").optional().or(z.literal('')),
+  skills: z.string().max(300, "Skills list is too long").optional(), // We'll process this string into an array
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
@@ -73,7 +73,15 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
       })
 
       if (!res.ok) {
-        throw new Error('Failed to update profile')
+        const errorData = await res.json().catch(() => null);
+        // If it's a Zod array error, join the messages. Otherwise use the string, or fallback.
+        let errorMessage = 'Failed to update profile. Please check your inputs and try again.';
+        if (errorData && Array.isArray(errorData.error)) {
+          errorMessage = errorData.error.map((e: any) => e.message).join(', ');
+        } else if (errorData && errorData.error) {
+          errorMessage = errorData.error;
+        }
+        throw new Error(errorMessage);
       }
 
       // Add a small delay for better UX before redirecting
@@ -88,10 +96,10 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
   }
 
   return (
-    <Card className="max-w-2xl mx-auto shadow-sm border-gray-200">
-      <CardHeader className="bg-[#1a365d] text-white rounded-t-xl">
+    <Card className="max-w-2xl mx-auto shadow-sm border-gray-200 dark:border-slate-800 dark:bg-slate-900 overflow-hidden transition-colors glass-card anim-fadeInUp">
+      <CardHeader className="bg-[#1a365d] dark:bg-gradient-to-r dark:from-[#0B0F19] dark:to-[#1a2b4c] text-white rounded-t-xl transition-colors">
         <CardTitle className="text-xl">Edit Your Profile</CardTitle>
-        <CardDescription className="text-blue-200">
+        <CardDescription className="text-blue-200 dark:text-blue-200/70">
           Update your professional career information, skills, and profile picture.
         </CardDescription>
       </CardHeader>
@@ -131,6 +139,7 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
                     variant="outline" 
                     size="sm"
                     onClick={() => open()}
+                    className="btn btn-outline bg-transparent"
                   >
                     Upload New Picture
                   </Button>
@@ -141,94 +150,103 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="currentEmployer">Current Employer</Label>
+              <Label htmlFor="currentEmployer" className="form-label">Current Employer</Label>
               <Input
                 id="currentEmployer"
                 placeholder="e.g. TechCorp Ltd."
+                className="form-input"
                 {...form.register('currentEmployer')}
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="jobTitle">Job Title</Label>
+              <Label htmlFor="jobTitle" className="form-label">Job Title</Label>
               <Input
                 id="jobTitle"
                 placeholder="e.g. Software Engineer"
+                className="form-input"
                 {...form.register('jobTitle')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
+              <Label htmlFor="city" className="form-label">City</Label>
               <Input
                 id="city"
                 placeholder="e.g. Lahore"
+                className="form-input"
                 {...form.register('city')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="country">Country</Label>
+              <Label htmlFor="country" className="form-label">Country</Label>
               <Input
                 id="country"
                 placeholder="e.g. Pakistan"
+                className="form-input"
                 {...form.register('country')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="industry">Industry</Label>
+              <Label htmlFor="industry" className="form-label">Industry</Label>
               <Input
                 id="industry"
                 placeholder="e.g. Information Technology"
+                className="form-input"
                 {...form.register('industry')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone" className="form-label">Phone Number</Label>
               <Input
                 id="phone"
                 placeholder="e.g. +92 300 1234567"
+                className="form-input"
                 {...form.register('phone')}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
+            <Label htmlFor="linkedinUrl" className="form-label">LinkedIn URL</Label>
             <Input
               id="linkedinUrl"
               placeholder="https://linkedin.com/in/username"
+              className="form-input"
               {...form.register('linkedinUrl')}
             />
             {form.formState.errors.linkedinUrl && (
-              <p className="text-xs text-red-500">{form.formState.errors.linkedinUrl.message}</p>
+              <p className="text-xs text-red-500 transition-colors">{form.formState.errors.linkedinUrl.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="skills">Skills & Certifications</Label>
+            <Label htmlFor="skills" className="form-label">Skills & Certifications</Label>
             <Input
               id="skills"
               placeholder="e.g. React.js, Node.js, Python, Agile"
+              className="form-input"
               {...form.register('skills')}
             />
-            <p className="text-[11px] text-gray-500">Separate skills with a comma.</p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 transition-colors">Separate skills with a comma.</p>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800 transition-colors">
             <Button
               type="button"
               variant="outline"
               onClick={() => router.push('/profile')}
               disabled={isSubmitting}
+              className="btn btn-outline bg-transparent"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-[#1a365d] hover:bg-[#12284c] text-white min-w-[120px]"
+              className="btn btn-primary min-w-[120px]"
               disabled={isSubmitting}
             >
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}

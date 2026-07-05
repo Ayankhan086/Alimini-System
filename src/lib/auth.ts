@@ -4,6 +4,14 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "./auth.config";
 
+import { CredentialsSignin } from "next-auth";
+
+class InvalidCredentialsError extends CredentialsSignin {
+  constructor(public code: string) {
+    super();
+  }
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   providers: [
@@ -15,7 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required.");
+          throw new InvalidCredentialsError("Email and password are required.");
         }
 
         const user = await prisma.user.findUnique({
@@ -24,7 +32,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
 
         if (!user) {
-          throw new Error("No account found with this email.");
+          throw new InvalidCredentialsError("Invalid email or password.");
         }
 
         const isValid = await bcrypt.compare(
@@ -33,7 +41,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         );
 
         if (!isValid) {
-          throw new Error("Incorrect password.");
+          throw new InvalidCredentialsError("Invalid email or password.");
         }
 
         return {

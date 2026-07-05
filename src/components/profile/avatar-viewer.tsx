@@ -13,9 +13,10 @@ interface AvatarViewerProps {
   fullName: string
   size?: 'sm' | 'lg'
   interactive?: boolean
+  priority?: boolean
 }
 
-export function AvatarViewer({ avatarUrl, initials, fullName, size = 'lg', interactive = true }: AvatarViewerProps) {
+export function AvatarViewer({ avatarUrl, initials, fullName, size = 'lg', interactive = true, priority = false }: AvatarViewerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const router = useRouter()
@@ -54,7 +55,14 @@ export function AvatarViewer({ avatarUrl, initials, fullName, size = 'lg', inter
       {/* Thumbnail */}
       <div className={circleClasses} onClick={() => interactive && setIsOpen(true)}>
         {avatarUrl ? (
-          <Image src={avatarUrl} alt={fullName} fill className="object-cover" />
+          <Image 
+            src={avatarUrl} 
+            alt={fullName} 
+            fill 
+            className="object-cover" 
+            priority={priority} 
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
         ) : (
           initials
         )}
@@ -81,7 +89,13 @@ export function AvatarViewer({ avatarUrl, initials, fullName, size = 'lg', inter
             {/* Image Display */}
             <div className="w-full aspect-square bg-gray-100 relative flex items-center justify-center border-b border-gray-100">
               {avatarUrl ? (
-                <Image src={avatarUrl} alt={fullName} fill className="object-cover" />
+                <Image 
+                  src={avatarUrl} 
+                  alt={fullName} 
+                  fill 
+                  className="object-cover" 
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-[#1a365d] text-white">
                   <span className="text-6xl font-bold uppercase tracking-widest">{initials}</span>

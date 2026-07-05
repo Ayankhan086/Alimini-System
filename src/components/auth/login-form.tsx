@@ -47,6 +47,9 @@ export function LoginForm() {
       })
 
       if (result?.error) {
+        if (result.error === 'CredentialsSignin') {
+          throw new Error('Invalid email or password. Please try again.')
+        }
         throw new Error(result.error)
       }
 
@@ -69,7 +72,7 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full delay-200 anim-fadeInUp">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {error && (
           <Alert variant="destructive">
@@ -85,7 +88,7 @@ export function LoginForm() {
                 id="email"
                 type="email"
                 placeholder="alumni@uetmardan.edu.pk"
-                className="pl-12 py-6 rounded-xl border-gray-200 bg-white text-black shadow-sm dark:bg-slate-900/50 dark:border-slate-700 dark:text-white dark:placeholder:text-slate-500"
+                className="form-input pl-12 py-6 rounded-xl text-black dark:text-white"
                 {...register('email')}
               />
             </div>
@@ -101,7 +104,7 @@ export function LoginForm() {
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
-                className="pl-12 pr-12 py-6 rounded-xl border-gray-200 bg-white text-black shadow-sm text-lg tracking-widest placeholder:tracking-normal placeholder:text-base placeholder:font-normal font-medium dark:bg-slate-900/50 dark:border-slate-700 dark:text-white dark:placeholder:text-slate-500"
+                className="form-input pl-12 pr-12 py-6 rounded-xl text-black dark:text-white text-lg tracking-widest placeholder:tracking-normal placeholder:text-base placeholder:font-normal font-medium"
                 {...register('password')}
               />
               <button
@@ -125,7 +128,7 @@ export function LoginForm() {
         <div className="flex items-center justify-between pt-1">
           <label className="flex items-center cursor-pointer group">
             <div className="relative flex items-center">
-              <input type="checkbox" className="peer h-4 w-4 cursor-pointer appearance-none rounded-[4px] border-2 border-gray-300 bg-white checked:border-[#1a365d] checked:bg-[#1a365d] dark:border-slate-600 dark:bg-slate-800 dark:checked:border-[#FFD700] dark:checked:bg-[#FFD700] transition-all" />
+              <input type="checkbox" className="peer h-4 w-4 cursor-pointer appearance-none rounded-[4px] border-2 border-gray-300 bg-white checked:border-[#008C9E] checked:bg-[#008C9E] dark:border-slate-600 dark:bg-slate-800 dark:checked:border-[#FFD700] dark:checked:bg-[#FFD700] transition-all" />
               <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white dark:text-slate-900 opacity-0 peer-checked:opacity-100">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeWidth="1">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
@@ -138,7 +141,7 @@ export function LoginForm() {
           </label>
           <Link
             href="/forgot-password"
-            className="text-[14px] font-semibold text-[#1a365d] dark:text-[#FFD700] hover:text-blue-800 dark:hover:text-yellow-300 transition-colors"
+            className="text-[14px] font-semibold text-[#008C9E] dark:text-[#FFD700] hover:text-[#006B7A] dark:hover:text-yellow-300 transition-colors"
           >
             Forgot password?
           </Link>
@@ -146,7 +149,7 @@ export function LoginForm() {
 
         <Button
           type="submit"
-          className="w-full h-12 mt-2 rounded-xl bg-[#1a365d] dark:bg-[#FFD700] dark:text-[#0B0F19] hover:bg-[#12284c] hover:cursor-pointer dark:hover:bg-[#E6C15C] text-white font-semibold text-[15px] flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+          className="btn btn-primary w-full h-12 mt-2 rounded-xl text-[15px]"
           disabled={loading}
         >
           {loading ? 'Signing in...' : 'Access Your Network'}

@@ -4,15 +4,15 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const updateProfileSchema = z.object({
-  avatarUrl: z.string().optional(),
-  currentEmployer: z.string().optional(),
-  jobTitle: z.string().optional(),
-  industry: z.string().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
-  linkedinUrl: z.string().optional(),
-  skills: z.array(z.string()).optional(),
-  phone: z.string().optional(),
+  avatarUrl: z.string().trim().url().max(500).optional().or(z.literal('')),
+  currentEmployer: z.string().trim().max(100).optional().or(z.literal('')),
+  jobTitle: z.string().trim().max(100).optional().or(z.literal('')),
+  industry: z.string().trim().max(100).optional().or(z.literal('')),
+  city: z.string().trim().max(100).optional().or(z.literal('')),
+  country: z.string().trim().max(100).optional().or(z.literal('')),
+  linkedinUrl: z.string().trim().url("Please enter a valid LinkedIn URL").max(200).optional().or(z.literal('')),
+  skills: z.array(z.string().trim().max(50)).max(20, "You can add up to 20 skills").optional(),
+  phone: z.string().trim().regex(/^\+?[0-9]{10,15}$/, "Phone must be a valid number with 10-15 digits").optional().or(z.literal('')),
 });
 
 export async function PUT(req: Request) {
@@ -50,6 +50,9 @@ export async function PUT(req: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 });
     }
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update profile due to an unexpected server issue. Please try again later.' }, 
+      { status: 500 }
+    );
   }
 }

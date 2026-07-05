@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export function CtaSection() {
   return (
-    <section className="bg-[#fdfbf7] dark:bg-[#0B0F19] py-24 px-4 sm:px-6 lg:px-8 border-t border-gray-100 dark:border-slate-800">
+    <section className="bg-[#fdfbf7] dark:bg-[#0B0F19] py-24 px-4 sm:px-6 lg:px-8 border-t border-gray-100 dark:border-slate-800 transition-colors">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="text-3xl sm:text-4xl font-bold text-[#1a2b4c] dark:text-white mb-4">
           Ready to reconnect?

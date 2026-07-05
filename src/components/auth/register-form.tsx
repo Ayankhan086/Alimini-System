@@ -57,10 +57,10 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>
 
 // ── Shared select class for consistent styling ────────────────────────
-const selectClass = "flex h-11 w-full items-center justify-between rounded-md border border-gray-200 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white px-3 py-2 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23131313%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:0.5rem] bg-[right_0.75rem_center] bg-no-repeat"
+const selectClass = "form-select h-11"
 
 // ── Shared input class for consistent styling ─────────────────────────
-const inputClass = "bg-gray-50/50 dark:bg-slate-900/50 border-gray-200 dark:border-slate-700 text-slate-900 dark:text-white dark:placeholder:text-slate-500 h-11"
+const inputClass = "form-input h-11"
 
 export function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
@@ -102,7 +102,7 @@ export function RegisterForm() {
 
   if (success) {
     return (
-      <div className="p-8 text-center">
+      <div className="p-8 text-center anim-fadeInUp">
         <div className="mb-4">
           <div className="mx-auto w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
             <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
@@ -116,7 +116,7 @@ export function RegisterForm() {
           You can log in now. Your profile will show as &ldquo;Pending&rdquo; until verified by the admin.
         </p>
         <Link href="/login">
-          <Button className="bg-[#1a365d] dark:bg-[#FFD700] dark:text-[#0B0F19] hover:bg-[#12284c] dark:hover:bg-[#E6C15C] text-white">
+          <Button className="btn btn-primary">
             Go to Login
           </Button>
         </Link>
@@ -143,12 +143,12 @@ export function RegisterForm() {
             {/* First name + Last name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-1.5">
-                <label htmlFor="firstName" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">First name</label>
+                <label htmlFor="firstName" className="form-label">First name</label>
                 <Input id="firstName" placeholder="Ahmed" className={inputClass} {...register('firstName')} />
                 {errors.firstName && <p className="text-xs text-red-500">{errors.firstName.message}</p>}
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="lastName" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">Last name</label>
+                <label htmlFor="lastName" className="form-label">Last name</label>
                 <Input id="lastName" placeholder="Khan" className={inputClass} {...register('lastName')} />
                 {errors.lastName && <p className="text-xs text-red-500">{errors.lastName.message}</p>}
               </div>
@@ -156,7 +156,7 @@ export function RegisterForm() {
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">Email address</label>
+              <label htmlFor="email" className="form-label">Email address</label>
               <Input id="email" type="email" placeholder="ahmed@example.com" className={inputClass} {...register('email')} />
               {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
             </div>
@@ -164,13 +164,13 @@ export function RegisterForm() {
             {/* Password + Confirm */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-1.5">
-                <label htmlFor="password" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">Password</label>
-                <Input id="password" type="password" placeholder="••••••••" className={`${inputClass} text-lg tracking-widest placeholder:tracking-normal placeholder:text-[15px] placeholder:font-normal`} {...register('password')} />
+                <label htmlFor="password" className="form-label">Password</label>
+                <Input id="password" type="password" placeholder="••••••••" className={`${inputClass} tracking-widest placeholder:tracking-normal`} {...register('password')} />
                 {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="confirmPassword" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">Confirm password</label>
-                <Input id="confirmPassword" type="password" placeholder="••••••••" className={`${inputClass} text-lg tracking-widest placeholder:tracking-normal placeholder:text-[15px] placeholder:font-normal`} {...register('confirmPassword')} />
+                <label htmlFor="confirmPassword" className="form-label">Confirm password</label>
+                <Input id="confirmPassword" type="password" placeholder="••••••••" className={`${inputClass} tracking-widest placeholder:tracking-normal`} {...register('confirmPassword')} />
                 {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>}
               </div>
             </div>
@@ -178,12 +178,12 @@ export function RegisterForm() {
             {/* CNIC + Phone */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-1.5">
-                <label htmlFor="cnic" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">CNIC number</label>
+                <label htmlFor="cnic" className="form-label">CNIC number</label>
                 <Input id="cnic" placeholder="35202-1234567-1" className={inputClass} {...register('cnic')} />
                 {errors.cnic && <p className="text-xs text-red-500">{errors.cnic.message}</p>}
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="phone" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">Phone number</label>
+                <label htmlFor="phone" className="form-label">Phone number</label>
                 <Input id="phone" placeholder="+92 300 1234567" className={inputClass} {...register('phone')} />
                 {errors.phone && <p className="text-xs text-red-500">{errors.phone.message}</p>}
               </div>
@@ -201,7 +201,7 @@ export function RegisterForm() {
             {/* Degree level + Program */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-1.5">
-                <label htmlFor="degreeLevel" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">Degree level</label>
+                <label htmlFor="degreeLevel" className="form-label">Degree level</label>
                 <select 
                   id="degreeLevel" 
                   className={selectClass}
@@ -214,7 +214,7 @@ export function RegisterForm() {
                 {errors.degreeLevel && <p className="text-xs text-red-500">{errors.degreeLevel.message}</p>}
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="program" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">Program name</label>
+                <label htmlFor="program" className="form-label">Program name</label>
                 <Input id="program" placeholder="Electrical Engineering" className={inputClass} {...register('program')} />
                 {errors.program && <p className="text-xs text-red-500">{errors.program.message}</p>}
               </div>
@@ -223,12 +223,12 @@ export function RegisterForm() {
             {/* Admission year + Graduation year */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-1.5">
-                <label htmlFor="admissionYear" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">Admission year</label>
+                <label htmlFor="admissionYear" className="form-label">Admission year</label>
                 <Input id="admissionYear" type="number" placeholder="2018" className={inputClass} {...register('admissionYear')} />
                 {errors.admissionYear && <p className="text-xs text-red-500">{errors.admissionYear.message}</p>}
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="graduationYear" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300">Graduation year</label>
+                <label htmlFor="graduationYear" className="form-label">Graduation year</label>
                 <Input id="graduationYear" type="number" placeholder="2022" className={inputClass} {...register('graduationYear')} />
                 {errors.graduationYear && <p className="text-xs text-red-500">{errors.graduationYear.message}</p>}
               </div>
@@ -236,7 +236,7 @@ export function RegisterForm() {
 
             {/* Registration number (full width) */}
             <div className="space-y-1.5">
-              <label htmlFor="registrationNumber" className="text-[13px] font-semibold text-gray-500 dark:text-slate-300 flex items-center gap-1.5">
+              <label htmlFor="registrationNumber" className="form-label flex items-center gap-1.5">
                 Registration number 
               </label>
               <Input id="registrationNumber" placeholder="18MDSWE012" className={inputClass} {...register('registrationNumber')} />
@@ -249,13 +249,13 @@ export function RegisterForm() {
         </div>
 
         <div className="pt-4">
-          <Button type="submit" className="w-full bg-[#1a365d] dark:bg-[#FFD700] dark:text-[#0B0F19] hover:bg-[#12284c] dark:hover:bg-[#E6C15C] text-white font-medium text-[15px] h-12 rounded-lg transition-all shadow-md" disabled={loading}>
+          <Button type="submit" className="btn btn-primary w-full h-12 text-[15px]" disabled={loading}>
             {loading ? 'Submitting...' : 'Submit Registration'}
           </Button>
           
           <p className="text-center mt-5 text-sm">
-            <span className="text-[#1a365d] dark:text-slate-300 font-medium">Already have an account? </span>
-            <Link href="/login" className="text-[#1a365d] dark:text-[#FFD700] font-bold hover:underline">
+            <span className="text-slate-600 dark:text-slate-300 font-medium">Already have an account? </span>
+            <Link href="/login" className="text-[#008C9E] dark:text-[#FFD700] font-bold hover:underline transition-colors">
               Login
             </Link>
           </p>
