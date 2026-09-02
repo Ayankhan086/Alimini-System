@@ -82,45 +82,54 @@ export function LoginForm() {
 
         <div className="space-y-4">
           <div className="space-y-1">
+            <label htmlFor="email" className="form-label">Email Address</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 dark:text-slate-500" />
+              <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 dark:text-slate-500" aria-hidden="true" />
               <Input
                 id="email"
                 type="email"
                 placeholder="alumni@uetmardan.edu.pk"
+                autoComplete="email"
                 className="form-input pl-12 py-6 rounded-xl text-black dark:text-white"
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? 'email-error' : undefined}
                 {...register('email')}
               />
             </div>
             {errors.email && (
-              <p className="text-sm text-red-500 pl-1">{errors.email.message}</p>
+              <p id="email-error" role="alert" className="text-sm text-red-500 pl-1">{errors.email.message}</p>
             )}
           </div>
 
           <div className="space-y-1">
+            <label htmlFor="password" className="form-label">Password</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 dark:text-slate-500" />
+              <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 dark:text-slate-500" aria-hidden="true" />
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
+                autoComplete="current-password"
                 className="form-input pl-12 pr-12 py-6 rounded-xl text-black dark:text-white text-lg tracking-widest placeholder:tracking-normal placeholder:text-base placeholder:font-normal font-medium"
+                aria-invalid={!!errors.password}
+                aria-describedby={errors.password ? 'password-error' : undefined}
                 {...register('password')}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:cursor-pointer transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
               >
                 {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
+                  <EyeOff className="h-5 w-5" aria-hidden="true" />
                 ) : (
-                  <Eye className="h-5 w-5" />
+                  <Eye className="h-5 w-5" aria-hidden="true" />
                 )}
               </button>
             </div>
             {errors.password && (
-              <p className="text-sm text-red-500 pl-1">{errors.password.message}</p>
+              <p id="password-error" role="alert" className="text-sm text-red-500 pl-1">{errors.password.message}</p>
             )}
           </div>
         </div>
@@ -151,9 +160,14 @@ export function LoginForm() {
           type="submit"
           className="btn btn-primary w-full h-12 mt-2 rounded-xl text-[15px]"
           disabled={loading}
+          aria-busy={loading}
+          aria-label={loading ? 'Signing in, please wait' : 'Access Your Network'}
         >
-          {loading ? 'Signing in...' : 'Access Your Network'}
-          {!loading && <ArrowRight className="h-4 w-4" />}
+          {loading ? (
+            <><span className="spinner" aria-hidden="true" /> Signing in...</>
+          ) : (
+            <>Access Your Network <ArrowRight className="h-4 w-4" aria-hidden="true" /></>
+          )}
         </Button>
       </form>
     </div>

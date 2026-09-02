@@ -62,20 +62,20 @@ export function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className={isActiveDesktop("/")}>
+          <nav className="hidden md:flex items-center space-x-8" aria-label="Main navigation">
+            <Link href="/" className={isActiveDesktop("/")} aria-current={currentLocation === "/" ? "page" : undefined}>
               Home
             </Link>
-            <Link href="/about" className={isActiveDesktop("/about")}>
+            <Link href="/about" className={isActiveDesktop("/about")} aria-current={currentLocation === "/about" ? "page" : undefined}>
               About
             </Link>
-            <Link href="/leadership" className={isActiveDesktop("/leadership")}>
+            <Link href="/leadership" className={isActiveDesktop("/leadership")} aria-current={currentLocation === "/leadership" ? "page" : undefined}>
               Leadership
             </Link>
-            <Link href="/contact" className={isActiveDesktop("/contact")}>
+            <Link href="/contact" className={isActiveDesktop("/contact")} aria-current={currentLocation === "/contact" ? "page" : undefined}>
               Contact
             </Link>
-            <Link href="/login" className={isActiveDesktop("/login")}>
+            <Link href="/login" className={isActiveDesktop("/login")} aria-current={currentLocation === "/login" ? "page" : undefined}>
               Login
             </Link>
             <Link
@@ -89,13 +89,13 @@ export function Header() {
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#2a3b5c] dark:hover:bg-[#31517f] transition-colors border border-gray-200 dark:border-[#31517f] ml-2"
-                aria-label="Toggle theme"
+                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                 title="Toggle light/dark mode"
               >
                 {theme === 'dark' ? (
-                  <Sun className="h-5 w-5 text-[#e6c15c]" />
+                  <Sun className="h-5 w-5 text-[#e6c15c]" aria-hidden="true" />
                 ) : (
-                  <Moon className="h-5 w-5 text-slate-600" />
+                  <Moon className="h-5 w-5 text-slate-600" aria-hidden="true" />
                 )}
               </button>
             )}
@@ -107,23 +107,26 @@ export function Header() {
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#2a3b5c] dark:hover:bg-[#31517f] transition-colors border border-gray-200 dark:border-[#31517f]"
-                aria-label="Toggle theme"
+                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {theme === 'dark' ? (
-                  <Sun className="h-5 w-5 text-[#e6c15c]" />
+                  <Sun className="h-5 w-5 text-[#e6c15c]" aria-hidden="true" />
                 ) : (
-                  <Moon className="h-5 w-5 text-slate-600" />
+                  <Moon className="h-5 w-5 text-slate-600" aria-hidden="true" />
                 )}
               </button>
             )}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white p-2"
+              aria-label={isOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isOpen}
+              aria-controls="mobile-nav"
             >
               {isOpen ? (
-                <X className="h-6 w-6" />
+                <X className="h-6 w-6" aria-hidden="true" />
               ) : (
-                <Menu className="h-6 w-6" />
+                <Menu className="h-6 w-6" aria-hidden="true" />
               )}
             </button>
           </div>
@@ -132,36 +135,21 @@ export function Header() {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="md:hidden bg-white dark:bg-[#1a2b4c] border-t border-gray-200 dark:border-[#2a3b5c]">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            <Link
-              href="/"
-              className={isActiveMobile("/")}
-            >
+        <div id="mobile-nav" className="md:hidden bg-white dark:bg-[#1a2b4c] border-t border-gray-200 dark:border-[#2a3b5c]">
+          <nav className="px-2 pt-2 pb-3 space-y-1" aria-label="Mobile navigation">
+            <Link href="/" className={isActiveMobile("/")} aria-current={currentLocation === "/" ? "page" : undefined}>
               Home
             </Link>
-            <Link
-              href="/about"
-              className={isActiveMobile("/about")}
-            >
+            <Link href="/about" className={isActiveMobile("/about")} aria-current={currentLocation === "/about" ? "page" : undefined}>
               About Us
             </Link>
-            <Link
-              href="/leadership"
-              className={isActiveMobile("/leadership")}
-            >
+            <Link href="/leadership" className={isActiveMobile("/leadership")} aria-current={currentLocation === "/leadership" ? "page" : undefined}>
               Leadership
             </Link>
-            <Link
-              href="/contact"
-              className={isActiveMobile("/contact")}
-            >
+            <Link href="/contact" className={isActiveMobile("/contact")} aria-current={currentLocation === "/contact" ? "page" : undefined}>
               Contact
             </Link>
-            <Link
-              href="/login"
-              className={isActiveMobile("/login")}
-            >
+            <Link href="/login" className={isActiveMobile("/login")} aria-current={currentLocation === "/login" ? "page" : undefined}>
               Login
             </Link>
             <Link
@@ -170,7 +158,7 @@ export function Header() {
             >
               Register
             </Link>
-          </div>
+          </nav>
         </div>
       )}
     </header>

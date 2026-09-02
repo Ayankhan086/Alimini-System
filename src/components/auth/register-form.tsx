@@ -157,21 +157,21 @@ export function RegisterForm() {
             {/* Email */}
             <div className="space-y-1.5">
               <label htmlFor="email" className="form-label">Email address</label>
-              <Input id="email" type="email" placeholder="ahmed@example.com" className={inputClass} {...register('email')} />
-              {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
+              <Input id="email" type="email" placeholder="ahmed@example.com" autoComplete="email" className={inputClass} aria-invalid={!!errors.email} aria-describedby={errors.email ? 'reg-email-error' : undefined} {...register('email')} />
+              {errors.email && <p id="reg-email-error" role="alert" className="text-xs text-red-500">{errors.email.message}</p>}
             </div>
 
             {/* Password + Confirm */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-1.5">
                 <label htmlFor="password" className="form-label">Password</label>
-                <Input id="password" type="password" placeholder="••••••••" className={`${inputClass} tracking-widest placeholder:tracking-normal`} {...register('password')} />
-                {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
+                <Input id="password" type="password" placeholder="••••••••" autoComplete="new-password" className={`${inputClass} tracking-widest placeholder:tracking-normal`} aria-invalid={!!errors.password} aria-describedby={errors.password ? 'reg-password-error' : undefined} {...register('password')} />
+                {errors.password && <p id="reg-password-error" role="alert" className="text-xs text-red-500">{errors.password.message}</p>}
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="confirmPassword" className="form-label">Confirm password</label>
-                <Input id="confirmPassword" type="password" placeholder="••••••••" className={`${inputClass} tracking-widest placeholder:tracking-normal`} {...register('confirmPassword')} />
-                {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>}
+                <Input id="confirmPassword" type="password" placeholder="••••••••" autoComplete="new-password" className={`${inputClass} tracking-widest placeholder:tracking-normal`} aria-invalid={!!errors.confirmPassword} aria-describedby={errors.confirmPassword ? 'reg-confirm-error' : undefined} {...register('confirmPassword')} />
+                {errors.confirmPassword && <p id="reg-confirm-error" role="alert" className="text-xs text-red-500">{errors.confirmPassword.message}</p>}
               </div>
             </div>
 
@@ -241,7 +241,7 @@ export function RegisterForm() {
               </label>
               <Input id="registrationNumber" placeholder="18MDSWE012" className={inputClass} {...register('registrationNumber')} />
               <p className="text-[11px] text-[#eab308] dark:text-[#FFD700] font-medium flex items-center mt-1">
-                <Info className="h-3 w-3 mr-1" /> Required for ORIC verification
+                <Info className="h-3 w-3 mr-1" aria-hidden="true" /> Required for ORIC verification
               </p>
               {errors.registrationNumber && <p className="text-xs text-red-500">{errors.registrationNumber.message}</p>}
             </div>
@@ -249,8 +249,18 @@ export function RegisterForm() {
         </div>
 
         <div className="pt-4">
-          <Button type="submit" className="btn btn-primary w-full h-12 text-[15px]" disabled={loading}>
-            {loading ? 'Submitting...' : 'Submit Registration'}
+          <Button
+            type="submit"
+            className="btn btn-primary w-full h-12 text-[15px]"
+            disabled={loading}
+            aria-busy={loading}
+            aria-label={loading ? 'Submitting registration, please wait' : 'Submit Registration'}
+          >
+            {loading ? (
+              <><span className="spinner" aria-hidden="true" /> Submitting...</>
+            ) : (
+              'Submit Registration'
+            )}
           </Button>
           
           <p className="text-center mt-5 text-sm">
