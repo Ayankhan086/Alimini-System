@@ -258,7 +258,7 @@ export function SuperAdminDashboard({ data }: { data: SuperAdminDashboardData })
                   </p>
                 </div>
                 <Link
-                  href="/dashboard/admin/verifications"
+                  href="/dashboard/admin/alumni"
                   className="inline-flex min-h-10 items-center gap-1 rounded-lg px-3 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 dark:text-amber-300 dark:hover:bg-slate-800"
                 >
                   Review queue <span aria-hidden="true">→</span>
