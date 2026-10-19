@@ -21,16 +21,19 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  const role = session?.user?.role;
+  const isAdmin = role === "SUPER_ADMIN" || role === "SUB_ADMIN" || role === "ADMIN";
+
   // Protect admin routes
-  if (pathname.startsWith("/dashboard/admin") && session?.user?.role !== "ADMIN") {
+  if (pathname.startsWith("/dashboard/admin") && !isAdmin) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
   // Redirect logged-in users away from auth pages
   if ((pathname.startsWith("/login") || pathname.startsWith("/register")) && session) {
-    if (session.user.role === "ADMIN") {
+    if (isAdmin) {
       return NextResponse.redirect(new URL("/dashboard/admin", req.url));
     }
-    // ALUMNI default redirect
+    // Default redirect for alumni, students, etc.
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 

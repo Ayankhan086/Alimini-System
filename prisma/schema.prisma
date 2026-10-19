@@ -1,17 +1,13 @@
 // =====================================================================
-// UETMAA Alumni Management System — Prisma Schema (MVP)
+// UETMAA Alumni Management System — Prisma Schema (Full)
 // =====================================================================
-// Built by analyzing Pages 1–5 of the Figma prototype field-by-field:
-//   Page 1  Login                      — email, password
-//   Page 2  Registration               — personal + educational fields
-//   Page 3  Alumni Dashboard           — profile completion, membership
-//                                         card; Events / Announcements /
-//                                         Activity sections use mock data
-//   Page 4  My Profile                 — academic/career/skills/privacy
-//   Page 5  Admin Dashboard            — verification stats + queue
-//
-// Every field below traces to something actually shown on one of these
-// screens. Nothing here is speculative or added "just in case."
+// Covers all 6 functional modules from the FYP Proposal:
+//   Module 1  User & Access Management
+//   Module 2  Profile, Directory & Digital Identity
+//   Module 3  Mentorship & Career Development
+//   Module 4  Events & Communication
+//   Module 5  Alumni Association & Governance (Elections)
+//   Module 6  Analytics & Reporting (AuditLog)
 // =====================================================================
 
 generator client {
@@ -22,29 +18,250 @@ datasource db {
   provider = "postgresql"
 }
 
-// ---------------------------------------------------------------------
-// ENUMS
-// ---------------------------------------------------------------------
+// =====================================================================
+// MODULE 1 — USER & ACCESS MANAGEMENT
+// =====================================================================
 
 enum Role {
-  ALUMNI
-  ADMIN
+  STUDENT      // Current enrolled student — registers via /register
+  FACULTY      // University faculty member — added by Super Admin
+  ALUMNI       // Verified graduate — registers via /register
+  SUB_ADMIN    // Faculty promoted to sub-admin by Super Admin (never direct registration)
+  SUPER_ADMIN  // Full system oversight — seeded or set directly in DB
 }
 
-// Page 5 — ORIC verification workflow (one-time gate)
 enum VerificationStatus {
   PENDING
   VERIFIED
   REJECTED
 }
 
-// Page 3 — Membership card "TYPE" (Art. 10)
-enum MembershipType {
-  REGULAR
-  LIFETIME
+// ---------------------------------------------------------------------
+// DEPARTMENT  (used by Sub-Admin scoping & Alumni/Student affiliation)
+// ---------------------------------------------------------------------
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g. "Computer Software Engineering"
+  code      String   @unique // e.g. "CSE"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subAdmins SubAdmin[]
+  alumni    Alumni[]
+  students  Student[]
+  faculty   Faculty[]
+  jobs      JobPosting[]
 }
 
-// Membership lifecycle (Art. 15–16)
+// ---------------------------------------------------------------------
+// USER  (base identity — all roles share this)
+// ---------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(STUDENT)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  alumni    Alumni?
+  student   Student?
+  faculty   Faculty?
+  subAdmin  SubAdmin?
+  superAdmin SuperAdmin?
+
+  // Module 4 — notifications received
+  notifications     Notification[]
+  // Module 4 — announcements created (admin)
+  announcementsCreated Announcement[] @relation("AnnouncementCreator")
+  // Module 4 — events created (admin)
+  eventsCreated        Event[]        @relation("EventCreator")
+  // Module 3 — job postings created (admin/faculty)
+  jobsCreated          JobPosting[]   @relation("JobCreator")
+  // Module 5 — elections created (admin)
+  electionsCreated     Election[]     @relation("ElectionCreator")
+  // Module 6 — audit trail entries
+  auditLogs            AuditLog[]
+  // Sub-admin requests reviewed by this user (Super Admin)
+  subAdminRequestsReviewed SubAdminRequest[] @relation("SubAdminRequestReviewer")
+}
+
+// ---------------------------------------------------------------------
+// STUDENT
+// ---------------------------------------------------------------------
+
+model Student {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  firstName      String
+  lastName       String
+  rollNumber     String   @unique
+  admissionYear  Int
+  expectedGraduationYear Int
+  phone          String?
+  avatarUrl      String?
+
+  // Transition: when they graduate, this becomes true and Alumni profile is created
+  hasTransitioned Boolean  @default(false)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Module 3 — mentorship requests as mentee
+  mentorshipRequestsAsStudent MentorshipRequest[] @relation("MenteeStudent")
+}
+
+// ---------------------------------------------------------------------
+// FACULTY
+// ---------------------------------------------------------------------
+
+model Faculty {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  firstName   String
+  lastName    String
+  designation String   // e.g. "Associate Professor"
+  phone       String?
+  avatarUrl   String?
+  officeRoom  String?
+
+  // Set to true when their SubAdminRequest is approved by Super Admin
+  isSubAdmin  Boolean   @default(false)
+  promotedAt  DateTime? // timestamp when request was approved
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subAdmin          SubAdmin?          // populated after approval
+  subAdminRequests  SubAdminRequest[]  // all requests this faculty has submitted
+}
+
+// ---------------------------------------------------------------------
+// SUB_ADMIN  (department-scoped, always via approved SubAdminRequest)
+// ---------------------------------------------------------------------
+// Full workflow:
+//   1. Faculty submits a SubAdminRequest with a reason
+//   2. Super Admin reviews the request queue
+//   3a. APPROVED → Faculty.isSubAdmin = true, Faculty.promotedAt = now(),
+//                  User.role = SUB_ADMIN, SubAdmin record created
+//   3b. REJECTED → request closed with rejectionReason, Faculty unchanged
+// Demotion: SubAdmin record deleted, Faculty.isSubAdmin = false, role = FACULTY
+
+model SubAdmin {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  // The Faculty record this sub-admin was promoted from
+  facultyId    String   @unique
+  faculty      Faculty  @relation(fields: [facultyId], references: [id])
+
+  // The approved request that triggered this promotion
+  requestId    String   @unique
+  request      SubAdminRequest @relation(fields: [requestId], references: [id])
+
+  // Super Admin who approved
+  approvedById String
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // DB-level hard constraint: one active sub-admin per department.
+  // PostgreSQL will reject any INSERT that violates this — no application code needed.
+  @@unique([departmentId])
+}
+
+// ---------------------------------------------------------------------
+// SUB_ADMIN REQUEST  (faculty → super admin approval queue)
+// ---------------------------------------------------------------------
+// Protection against multiple sub-admins per department:
+//
+//  Layer 1 — DB (SubAdmin model above):
+//    @@unique([departmentId]) means PostgreSQL physically cannot have
+//    two SubAdmin rows for the same department. Hard stop.
+//
+//  Layer 2 — Application (API route guard before creating SubAdminRequest):
+//    Before accepting a new request, ONLY check:
+//      → Department has no active SubAdmin record
+//    If it does → return 409 Conflict to the faculty.
+//
+//    Multiple faculty CAN submit PENDING requests at the same time.
+//    Super Admin reviews the queue and picks one to approve.
+//    Approving one auto-rejects all other PENDING requests for that department.
+
+enum SubAdminRequestStatus {
+  PENDING   // Submitted, awaiting Super Admin review
+  APPROVED  // Approved — SubAdmin record has been created
+  REJECTED  // Rejected — Faculty remains unchanged
+  CANCELLED // Faculty withdrew their own request
+}
+
+model SubAdminRequest {
+  id           String     @id @default(cuid())
+  facultyId    String
+  faculty      Faculty    @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  departmentId String     // denormalised for fast queue filtering by department
+
+  // Faculty's justification for requesting sub-admin access
+  reason    String
+
+  status    SubAdminRequestStatus @default(PENDING)
+
+  // Populated when Super Admin acts on the request
+  reviewedById    String?
+  reviewedBy      User?     @relation("SubAdminRequestReviewer", fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
+  rejectionReason String?   // only set on REJECTED
+
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // One-to-one: if approved, this request spawns exactly one SubAdmin record
+  subAdmin SubAdmin?
+
+  @@index([status])
+  @@index([facultyId])
+  @@index([departmentId, status]) // fast lookup: "does this dept have a PENDING request?"
+}
+
+// ---------------------------------------------------------------------
+// SUPER_ADMIN  (full system access)
+// ---------------------------------------------------------------------
+
+model SuperAdmin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// =====================================================================
+// MODULE 2 — PROFILE, DIRECTORY & DIGITAL IDENTITY
+// =====================================================================
+
+// NOTE: Both REGULAR and PAID members have full access to all alumni features.
+// The PAID tier is reserved for future monetization/perks — not enforced yet.
+enum MembershipType {
+  REGULAR
+  PAID
+}
+
 enum MembershipStatus {
   ACTIVE
   INACTIVE
@@ -52,99 +269,514 @@ enum MembershipStatus {
 }
 
 // ---------------------------------------------------------------------
-// USER  (Page 1 — Login)
-// ---------------------------------------------------------------------
-
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  role         Role     @default(ALUMNI)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  alumni Alumni?
-}
-
-// ---------------------------------------------------------------------
-// ALUMNI PROFILE  (Pages 2, 4, 5)
+// ALUMNI PROFILE
 // ---------------------------------------------------------------------
 
 model Alumni {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  userId       String     @unique
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
 
-  // Personal Information — Page 2
-  firstName String // Page 2: "First name"
-  lastName  String // Page 2: "Last name"
-  cnic      String? @unique // Page 2: "CNIC number"
-  phone     String? // Page 2: "Phone number"
-  avatarUrl String? // Page 4: profile photo
+  // Personal Information
+  firstName String
+  lastName  String
+  cnic      String?  @unique
+  phone     String?
+  avatarUrl String?
 
-  // Educational Information — Page 2, Page 4 (Academic Information)
-  degreeLevel    String // Page 2: "Degree level" (e.g. "BSc")
-  program        String // Page 2: "Program name" / Page 4: "Department"
-  admissionYear  Int // Page 4: "Batch: 2019 – 2023" (start year)
-  graduationYear Int // Page 2: "Graduation year"
-  rollNumber     String @unique // Page 2 + Page 5: ORIC roll number
-  cgpa           Float? // Page 4: "CGPA: 3.72 / 4.0"
+  // Educational Information
+  degreeLevel    String // e.g. "BSc", "MSc"
+  program        String // e.g. "Software Engineering"
+  admissionYear  Int
+  graduationYear Int
+  rollNumber     String @unique
+  cgpa           Float?
 
-  // Career Information — Page 4
-  currentEmployer String? // Page 4: "Employer"
-  jobTitle        String? // Page 4: "Title"
-  industry        String? // Page 4: "Industry"
-  linkedinUrl     String? // Page 3: shown in profile completion missing list
-  city            String? // Page 4: "Location" (city part)
-  country         String? // Page 4: "Location" (country part)
+  // Career Information
+  currentEmployer String?
+  jobTitle        String?
+  industry        String?
+  linkedinUrl     String?
+  city            String?
+  country         String?
 
-  // Skills & Certifications — Page 4 (simple tag list)
-  skills String[]
+  // Skills & Certifications (simple tag list)
+  skills         String[]
+  certifications String[]
 
-  // Privacy — Page 4
-  showInDirectory Boolean @default(true) // visible to other alumni in directory
+  // Privacy settings
+  showInDirectory   Boolean @default(true)
+  showEmail         Boolean @default(false)
+  showPhone         Boolean @default(false)
 
-  // Verification — Page 5 (ORIC one-time credential check, Art. 20.3)
+  // Verification — one-time ORIC credential check
   verificationStatus VerificationStatus @default(PENDING)
-  rejectionReason    String? // reason when admin rejects
-  verifiedAt         DateTime? // timestamp when admin approves
-  verifiedBy         String? // admin user ID who performed verification
+  rejectionReason    String?
+  verifiedAt         DateTime?
+  verifiedBy         String?  // admin user ID who approved
+
+  // Student-to-Alumni transition tracking
+  transitionedFromStudentId String? // original Student.id if transitioned
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  membership Membership? // created after verification is approved
+  // Relations
+  membership          Membership?
+  digitalIdCard       DigitalIdCard?
+  mentorshipRequests  MentorshipRequest[] @relation("MentorAlumni")
+  jobApplications     JobApplication[]
+  eventRsvps          EventRsvp[]
+  electionCandidacies ElectionCandidate[]
+  votes               Vote[]
 
   @@index([verificationStatus])
   @@index([graduationYear])
   @@index([program])
+  @@index([departmentId])
+  @@index([industry])
+  @@index([country, city])
 }
 
 // ---------------------------------------------------------------------
-// MEMBERSHIP  (Page 3 — dashboard membership card, Art. 10–16)
+// MEMBERSHIP  (created after verification is approved)
 // ---------------------------------------------------------------------
-// Separate from Alumni because:
-//   1. Verification (are you a real graduate?) ≠ Membership (what type, fees, standing)
-//   2. Membership only begins AFTER verification is approved
-//   3. Membership has its own lifecycle (active → inactive → suspended)
 
 model Membership {
   id       String @id @default(cuid())
   alumniId String @unique
   alumni   Alumni @relation(fields: [alumniId], references: [id], onDelete: Cascade)
 
-  // Page 3 — "TYPE: Regular"
-  type MembershipType @default(REGULAR)
-
-  // Page 3 — "STATUS: Active" (Art. 15)
+  type   MembershipType   @default(REGULAR)
   status MembershipStatus @default(ACTIVE)
 
-  // Page 3 — "FEE PAID: Yes/No" (Art. 11)
-  feePaid Boolean @default(false)
+  feePaid   Boolean   @default(false)
+  feePaidAt DateTime?
 
-  // Page 3 — "Member Since: 2023"
-  startDate DateTime @default(now())
+  startDate   DateTime  @default(now())
+  expiryDate  DateTime? // null = lifetime membership
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------
+// DIGITAL ALUMNI ID CARD  (auto-generated after verification)
+// ---------------------------------------------------------------------
+
+model DigitalIdCard {
+  id          String  @id @default(cuid())
+  alumniId    String  @unique
+  alumni      Alumni  @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+
+  cardNumber  String  @unique // e.g. "UETMAA-2023-0042"
+  qrCodeUrl   String? // hosted QR code image URL
+  issuedAt    DateTime @default(now())
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// =====================================================================
+// MODULE 3 — MENTORSHIP & CAREER DEVELOPMENT
+// =====================================================================
+
+enum MentorshipStatus {
+  PENDING   // Student sent request, awaiting alumni response
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+// ---------------------------------------------------------------------
+// MENTORSHIP REQUEST
+// ---------------------------------------------------------------------
+
+model MentorshipRequest {
+  id        String @id @default(cuid())
+  mentorId  String // Alumni.id
+  mentor    Alumni @relation("MentorAlumni", fields: [mentorId], references: [id], onDelete: Cascade)
+  menteeStudentId String // Student.id
+  menteeStudent   Student @relation("MenteeStudent", fields: [menteeStudentId], references: [id], onDelete: Cascade)
+
+  message   String?  // Initial message from student
+  status    MentorshipStatus @default(PENDING)
+  topic     String?  // e.g. "Career Guidance", "Technical Interview Prep"
+
+  acceptedAt  DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Real-time chat messages after acceptance
+  messages Message[]
+
+  @@unique([mentorId, menteeStudentId]) // prevent duplicate requests
+}
+
+// ---------------------------------------------------------------------
+// MESSAGE  (real-time mentorship chat — stored in DB)
+// ---------------------------------------------------------------------
+
+model Message {
+  id                  String            @id @default(cuid())
+  mentorshipRequestId String
+  mentorshipRequest   MentorshipRequest @relation(fields: [mentorshipRequestId], references: [id], onDelete: Cascade)
+
+  senderUserId String // User.id of the sender
+  content      String
+  isRead       Boolean  @default(false)
+  sentAt       DateTime @default(now())
+
+  @@index([mentorshipRequestId])
+  @@index([senderUserId])
+}
+
+// ---------------------------------------------------------------------
+// JOB / INTERNSHIP POSTING
+// ---------------------------------------------------------------------
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+  REMOTE
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+  FILLED
+}
+
+model JobPosting {
+  id           String     @id @default(cuid())
+  createdById  String     // User.id (alumni or admin who posted)
+  createdBy    User       @relation("JobCreator", fields: [createdById], references: [id])
+  departmentId String?    // optional — relevant department
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  title        String
+  company      String
+  location     String?
+  description  String
+  requirements String?
+  type         JobType   @default(FULL_TIME)
+  status       JobStatus @default(OPEN)
+  deadline     DateTime?
+  salary       String?   // e.g. "50,000 – 80,000 PKR"
+  applyUrl     String?   // external link OR handled internally
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  applications JobApplication[]
+
+  @@index([status])
+  @@index([type])
+}
+
+// ---------------------------------------------------------------------
+// JOB APPLICATION
+// ---------------------------------------------------------------------
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  SHORTLISTED
+  REJECTED
+  HIRED
+}
+
+model JobApplication {
+  id           String     @id @default(cuid())
+  jobId        String
+  job          JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  alumniId     String
+  alumni       Alumni     @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+
+  coverLetter  String?
+  resumeUrl    String?
+  status       ApplicationStatus @default(SUBMITTED)
+  appliedAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@unique([jobId, alumniId]) // one application per job per alumni
+
+  @@index([status])
+}
+
+// =====================================================================
+// MODULE 4 — EVENTS & COMMUNICATION
+// =====================================================================
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum RsvpStatus {
+  ATTENDING
+  NOT_ATTENDING
+  MAYBE
+}
+
+// ---------------------------------------------------------------------
+// EVENT
+// ---------------------------------------------------------------------
+
+model Event {
+  id          String      @id @default(cuid())
+  createdById String
+  createdBy   User        @relation("EventCreator", fields: [createdById], references: [id])
+
+  title       String
+  description String
+  location    String?     // physical address or "Online"
+  meetingUrl  String?     // for virtual events
+  bannerUrl   String?     // event banner image
+  startDate   DateTime
+  endDate     DateTime
+  status      EventStatus @default(UPCOMING)
+  maxCapacity Int?        // null = unlimited
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  rsvps EventRsvp[]
+
+  @@index([status])
+  @@index([startDate])
+}
+
+// ---------------------------------------------------------------------
+// EVENT RSVP
+// ---------------------------------------------------------------------
+
+model EventRsvp {
+  id       String     @id @default(cuid())
+  eventId  String
+  event    Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  alumniId String
+  alumni   Alumni     @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+
+  status    RsvpStatus @default(ATTENDING)
+  rsvpedAt  DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([eventId, alumniId])
+}
+
+// ---------------------------------------------------------------------
+// ANNOUNCEMENT
+// ---------------------------------------------------------------------
+
+enum AnnouncementAudience {
+  ALL        // Everyone (public)
+  ALUMNI     // Verified alumni only
+  STUDENTS   // Students only
+  ADMIN      // Admin staff only
+}
+
+model Announcement {
+  id          String               @id @default(cuid())
+  createdById String
+  createdBy   User                 @relation("AnnouncementCreator", fields: [createdById], references: [id])
+
+  title       String
+  content     String
+  imageUrl    String?
+  audience    AnnouncementAudience @default(ALL)
+  isPinned    Boolean              @default(false)
+  publishedAt DateTime             @default(now())
+  expiresAt   DateTime?            // null = never expires
+
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([audience])
+  @@index([isPinned])
+}
+
+// ---------------------------------------------------------------------
+// NOTIFICATION  (in-app, per user)
+// ---------------------------------------------------------------------
+
+enum NotificationType {
+  VERIFICATION_APPROVED
+  VERIFICATION_REJECTED
+  MENTORSHIP_REQUEST
+  MENTORSHIP_ACCEPTED
+  MENTORSHIP_REJECTED
+  NEW_MESSAGE
+  EVENT_REMINDER
+  NEW_JOB_POSTING
+  ELECTION_STARTED
+  ELECTION_RESULT
+  GENERAL
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      NotificationType
+  title     String
+  body      String
+  link      String?          // optional deep link (e.g. "/events/xyz")
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+}
+
+// =====================================================================
+// MODULE 5 — ALUMNI ASSOCIATION & GOVERNANCE (ELECTIONS)
+// =====================================================================
+
+enum ElectionStatus {
+  DRAFT         // being set up
+  NOMINATIONS   // accepting candidates
+  VOTING        // voting is open
+  CLOSED        // voting ended, results computing
+  RESULTS       // results declared
+  CANCELLED
+}
+
+// ---------------------------------------------------------------------
+// ELECTION
+// ---------------------------------------------------------------------
+
+model Election {
+  id          String        @id @default(cuid())
+  createdById String
+  createdBy   User          @relation("ElectionCreator", fields: [createdById], references: [id])
+
+  title           String    // e.g. "UETMAA President Election 2026"
+  description     String?
+  status          ElectionStatus @default(DRAFT)
+
+  nominationStart DateTime
+  nominationEnd   DateTime
+  votingStart     DateTime
+  votingEnd       DateTime
+
+  // NOTE: All verified alumni can vote regardless of membership type for now.
+  // Set to true in the future when PAID-member-only voting is enforced.
+  paidMembersOnly Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  candidates ElectionCandidate[]
+  votes      Vote[]
+
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------
+// ELECTION CANDIDATE
+// ---------------------------------------------------------------------
+
+enum CandidateStatus {
+  NOMINATED
+  APPROVED   // admin approved the nomination
+  REJECTED   // admin rejected the nomination
+  WITHDRAWN
+}
+
+model ElectionCandidate {
+  id         String   @id @default(cuid())
+  electionId String
+  election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  alumniId   String
+  alumni     Alumni   @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+
+  position   String   // e.g. "President", "Secretary General"
+  manifesto  String?
+  photoUrl   String?
+  status     CandidateStatus @default(NOMINATED)
+  voteCount  Int      @default(0) // cached counter, updated on vote
+
+  nominatedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  votes Vote[]
+
+  @@unique([electionId, alumniId]) // one candidacy per election per alumni
+
+  @@index([electionId, status])
+}
+
+// ---------------------------------------------------------------------
+// VOTE  (duplicate-vote prevention via unique constraint)
+// ---------------------------------------------------------------------
+
+model Vote {
+  id          String            @id @default(cuid())
+  electionId  String
+  election    Election          @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  candidateId String
+  candidate   ElectionCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  alumniId    String
+  alumni      Alumni            @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+
+  castAt      DateTime          @default(now())
+
+  // Critical: one vote per alumni per election — enforced at DB level
+  @@unique([electionId, alumniId])
+
+  @@index([electionId])
+  @@index([candidateId])
+}
+
+// =====================================================================
+// MODULE 6 — ANALYTICS & REPORTING
+// =====================================================================
+
+// AuditLog tracks all significant admin actions for accountability
+// Actual analytics queries are computed at the API layer using Prisma
+// aggregations (COUNT, GROUP BY) — no separate aggregate tables needed.
+
+enum AuditAction {
+  USER_CREATED
+  USER_SUSPENDED
+  USER_DELETED
+  ALUMNI_VERIFIED
+  ALUMNI_REJECTED
+  ELECTION_CREATED
+  ELECTION_STATUS_CHANGED
+  JOB_POSTED
+  JOB_CLOSED
+  EVENT_CREATED
+  EVENT_CANCELLED
+  ANNOUNCEMENT_PUBLISHED
+  MEMBERSHIP_UPGRADED
+  ROLE_CHANGED
+}
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  performedById String
+  performedBy   User      @relation(fields: [performedById], references: [id])
+
+  action      AuditAction
+  targetType  String      // e.g. "Alumni", "Election", "JobPosting"
+  targetId    String      // ID of the affected record
+  details     Json?       // extra context (e.g. old vs new value)
+  ipAddress   String?
+
+  createdAt   DateTime    @default(now())
+
+  @@index([action])
+  @@index([targetType, targetId])
+  @@index([performedById])
 }

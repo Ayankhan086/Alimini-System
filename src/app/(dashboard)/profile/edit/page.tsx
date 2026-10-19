@@ -1,26 +1,47 @@
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Sidebar } from '@/components/alumni/sidebar'
 import { EditProfileForm } from '@/components/profile/edit-profile-form'
+import { getActiveSessionUser } from '@/lib/active-session'
 
-import { ThemeToggle } from '@/components/theme-toggle'
 
 export const metadata: Metadata = {
   title: 'Edit Profile - Alumni Management System',
 }
 
 export default async function EditProfilePage() {
-  const session = await auth()
-
-  if (!session || !session.user || !session.user.id) {
+  const user = await getActiveSessionUser()
+  if (!user) {
     redirect('/login')
   }
+  if (user.role !== 'ALUMNI') redirect('/dashboard')
 
   // Fetch the user's current Alumni profile
   const alumniData = await prisma.alumni.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      avatarUrl: true,
+      currentEmployer: true,
+      jobTitle: true,
+      industry: true,
+      city: true,
+      country: true,
+      linkedinUrl: true,
+      phone: true,
+      skills: true,
+      showInDirectory: true,
+      showEmail: true,
+      showPhone: true,
+      cnic: true,
+      degreeLevel: true,
+      program: true,
+      graduationYear: true,
+      verificationStatus: true,
+    },
   })
 
   if (!alumniData) {
@@ -36,7 +57,6 @@ export default async function EditProfilePage() {
         <header className="flex items-center justify-between px-8 py-5 bg-white dark:bg-[#1a2b4c] shadow-sm border-b border-gray-100 dark:border-[#2a3b5c] z-10 transition-colors">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">Edit Profile</h2>
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <div className="w-9 h-9 rounded-full bg-[#1a365d] dark:bg-[#e6c15c] text-white dark:text-[#1a2b4c] flex items-center justify-center font-bold text-xs shadow-sm transition-colors">
               {alumniData.firstName[0]}{alumniData.lastName[0]}
             </div>

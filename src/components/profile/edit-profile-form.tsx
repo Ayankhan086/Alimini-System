@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
@@ -24,11 +24,38 @@ const profileSchema = z.object({
   linkedinUrl: z.string().trim().url("Please enter a valid LinkedIn URL").max(200).optional().or(z.literal('')),
   phone: z.string().trim().regex(/^\+?[0-9]{10,15}$/, "Phone must be a valid number with 10-15 digits").optional().or(z.literal('')),
   skills: z.string().max(300, "Skills list is too long").optional(), // We'll process this string into an array
+  showInDirectory: z.boolean(),
+  showEmail: z.boolean(),
+  showPhone: z.boolean(),
+  cnic: z.string().optional(),
+  degreeLevel: z.string().optional(),
+  program: z.string().optional(),
+  graduationYear: z.number().optional(),
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
 
-export function EditProfileForm({ initialData }: { initialData: any }) {
+interface InitialProfileData {
+  avatarUrl?: string | null;
+  currentEmployer?: string | null;
+  jobTitle?: string | null;
+  industry?: string | null;
+  city?: string | null;
+  country?: string | null;
+  linkedinUrl?: string | null;
+  phone?: string | null;
+  skills?: string[] | null;
+  showInDirectory?: boolean;
+  showEmail?: boolean;
+  showPhone?: boolean;
+  cnic?: string | null;
+  degreeLevel?: string;
+  program?: string;
+  graduationYear?: number;
+  verificationStatus?: string;
+}
+
+export function EditProfileForm({ initialData }: { initialData: InitialProfileData | null }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -45,11 +72,18 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
       linkedinUrl: initialData?.linkedinUrl || '',
       phone: initialData?.phone || '',
       skills: initialData?.skills ? initialData.skills.join(', ') : '',
+      showInDirectory: initialData?.showInDirectory ?? true,
+      showEmail: initialData?.showEmail ?? false,
+      showPhone: initialData?.showPhone ?? false,
+      cnic: initialData?.cnic ?? '',
+      degreeLevel: initialData?.degreeLevel ?? '',
+      program: initialData?.program ?? '',
+      graduationYear: initialData?.graduationYear,
     },
   })
 
   // Watch avatarUrl to render preview
-  const avatarUrl = form.watch('avatarUrl')
+  const avatarUrl = useWatch({ control: form.control, name: 'avatarUrl' })
 
   async function onSubmit(data: ProfileFormValues) {
     setIsSubmitting(true)
@@ -61,9 +95,13 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
         ? data.skills.split(',').map(s => s.trim()).filter(s => s !== '')
         : []
 
+      const { cnic, degreeLevel, program, graduationYear, ...profileValues } = data
       const payload = {
-        ...data,
+        ...profileValues,
         skills: skillsArray,
+        ...(initialData?.verificationStatus === 'REJECTED'
+          ? { cnic, degreeLevel, program, graduationYear: Number(graduationYear) }
+          : {}),
       }
 
       const res = await fetch('/api/profile', {
@@ -77,9 +115,9 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
         // If it's a Zod array error, join the messages. Otherwise use the string, or fallback.
         let errorMessage = 'Failed to update profile. Please check your inputs and try again.';
         if (errorData && Array.isArray(errorData.error)) {
-          errorMessage = errorData.error.map((e: any) => e.message).join(', ');
+          errorMessage = errorData.error.map((e: { message?: string }) => e.message || 'Validation error').join(', ');
         } else if (errorData && errorData.error) {
-          errorMessage = errorData.error;
+          errorMessage = typeof errorData.error === 'string' ? errorData.error : JSON.stringify(errorData.error);
         }
         throw new Error(errorMessage);
       }
@@ -89,8 +127,8 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
         router.push('/profile?updated=true')
         router.refresh() // Force next.js to refetch data on the profile page
       }, 500)
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
       setIsSubmitting(false)
     }
   }
@@ -111,6 +149,33 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
             </div>
           )}
 
+          {initialData?.verificationStatus === 'REJECTED' && (
+            <section className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <h2 className="font-semibold text-amber-950">Correct your verification details</h2>
+              <p className="mt-1 text-sm text-amber-900">
+                Update the requested identity details below and save to resubmit your profile for department review.
+              </p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <label className="text-sm font-medium text-slate-700">
+                  CNIC
+                  <Input required pattern="[0-9]{5}-[0-9]{7}-[0-9]" placeholder="XXXXX-XXXXXXX-X" className="mt-1 form-input" {...form.register('cnic')} />
+                </label>
+                <label className="text-sm font-medium text-slate-700">
+                  Degree level
+                  <Input required minLength={2} maxLength={50} className="mt-1 form-input" {...form.register('degreeLevel')} />
+                </label>
+                <label className="text-sm font-medium text-slate-700">
+                  Program
+                  <Input required minLength={2} maxLength={100} className="mt-1 form-input" {...form.register('program')} />
+                </label>
+                <label className="text-sm font-medium text-slate-700">
+                  Graduation year
+                  <Input required type="number" min={2000} max={new Date().getFullYear()} className="mt-1 form-input" {...form.register('graduationYear', { valueAsNumber: true })} />
+                </label>
+              </div>
+            </section>
+          )}
+
           {/* Avatar Upload Section */}
           <div className="flex flex-col items-center justify-center space-y-4 mb-6">
             <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-gray-100 bg-gray-50 flex items-center justify-center shadow-sm">
@@ -122,8 +187,10 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
             </div>
             <CldUploadWidget 
               uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
-              onSuccess={(result: any) => {
-                form.setValue('avatarUrl', result.info.secure_url)
+              onSuccess={(result) => {
+                if (typeof result === 'object' && result && 'info' in result && typeof result.info === 'object' && result.info && 'secure_url' in result.info) {
+                  form.setValue('avatarUrl', (result.info as { secure_url: string }).secure_url)
+                }
               }}
               options={{
                 maxFiles: 1,
@@ -233,6 +300,22 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
             />
             <p className="text-[11px] text-gray-500 dark:text-gray-400 transition-colors">Separate skills with a comma.</p>
           </div>
+
+          <fieldset className="space-y-3 rounded-lg border border-gray-200 p-4">
+            <legend className="px-1 text-sm font-semibold text-[#1a365d]">Directory privacy</legend>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input type="checkbox" className="mt-1" {...form.register('showInDirectory')} />
+              <span>Show my profile in the alumni directory</span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input type="checkbox" className="mt-1" {...form.register('showEmail')} />
+              <span>Show my email address to directory members</span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input type="checkbox" className="mt-1" {...form.register('showPhone')} />
+              <span>Show my phone number to directory members</span>
+            </label>
+          </fieldset>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800 transition-colors">
             <Button

@@ -1,31 +1,30 @@
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { AlumniDashboard } from '@/components/alumni/dashboard'
+import { getActiveSessionUser } from '@/lib/active-session'
 
 export const metadata: Metadata = {
   title: 'Dashboard - Alumni Management System',
 }
 
 export default async function DashboardPage() {
-  const session = await auth()
-
-  if (!session || !session.user || !session.user.id) {
+  const user = await getActiveSessionUser()
+  if (!user) {
     redirect('/login')
   }
 
-  // Fetch real data
+  if (user.role === 'SUPER_ADMIN' || user.role === 'SUB_ADMIN') redirect('/dashboard/admin')
+  if (user.role === 'FACULTY') redirect('/dashboard/faculty')
+
   const alumniData = await prisma.alumni.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
   })
 
   if (!alumniData) {
-    // Edge case if user is admin or somehow doesn't have an alumni profile yet
-    if (session.user.role === 'ADMIN') {
-      redirect('/dashboard/admin')
+    if (user.role === 'STUDENT') {
+      redirect('/dashboard/student')
     }
-    // Fallback if missing profile (though auth logic usually ensures it)
     return <div>Profile not found. Please contact support.</div>
   }
 

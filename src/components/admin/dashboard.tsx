@@ -14,7 +14,6 @@ import {
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
-import { ThemeToggle } from '@/components/theme-toggle'
 
 // Dynamically import the chart component to reduce initial bundle size 
 // and prevent hydration errors with Chart.js
@@ -72,7 +71,6 @@ export function AdminDashboard() {
         <header className="flex items-center justify-between px-8 py-4 bg-white dark:bg-[#1a2b4c] border-b border-gray-200 dark:border-[#2a3b5c] transition-colors">
           <h2 className="text-2xl font-bold text-[#1a365d] dark:text-white transition-colors">Admin Dashboard</h2>
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <div className="w-10 h-10 rounded-full bg-blue-600 dark:bg-[#e6c15c] text-white dark:text-[#1a2b4c] flex items-center justify-center font-bold text-sm transition-colors">
               AD
             </div>

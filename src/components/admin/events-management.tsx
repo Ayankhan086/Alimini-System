@@ -14,7 +14,6 @@ import {
   Filter,
   Calendar,
   MapPin,
-  Users,
   Edit,
   Trash2,
   Eye,
@@ -61,7 +60,7 @@ const mockEvents: Event[] = [
 ]
 
 export function EventsManagement() {
-  const [events, setEvents] = useState<Event[]>(mockEvents)
+  const [events] = useState<Event[]>(mockEvents)
   const [showAddForm, setShowAddForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 

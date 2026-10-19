@@ -2,12 +2,18 @@
 import { RegisterForm } from '@/components/auth/register-form'
 import { Metadata } from 'next'
 import Image from 'next/image'
+import { prisma } from '@/lib/prisma'
 
 export const metadata: Metadata = {
   title: 'Register - Alumni Management System',
 }
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const departments = await prisma.department.findMany({
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  })
+
   return (
     <div className="min-h-screen bg-[url('/UETM-IMAGES/bg_uet.jpg')] bg-cover bg-center bg-no-repeat bg-fixed flex flex-col items-center justify-center p-4 py-12 relative">
       <div className="absolute inset-0 bg-black/60"></div>
@@ -20,7 +26,7 @@ export default function RegisterPage() {
       
       <div className="w-full max-w-[800px] glass-card overflow-hidden relative z-10 transition-colors anim-fadeInUp delay-100">
         <div className="bg-white/95 dark:bg-[#0B0F19]/95 transition-colors">
-          <RegisterForm />
+          <RegisterForm departments={departments} />
         </div>
       </div>
     </div>

@@ -57,8 +57,13 @@ export function LoginForm() {
       const res = await fetch('/api/auth/session')
       const session = await res.json()
       
-      if (session?.user?.role === 'ADMIN') {
+      const role = session?.user?.role;
+      if (role === 'SUPER_ADMIN' || role === 'SUB_ADMIN' || role === 'ADMIN') {
         router.push('/dashboard/admin')
+      } else if (role === 'FACULTY') {
+        router.push('/dashboard/faculty')
+      } else if (role === 'STUDENT') {
+        router.push('/dashboard/student')
       } else {
         router.push('/dashboard')
       }

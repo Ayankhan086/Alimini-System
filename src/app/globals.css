@@ -38,23 +38,22 @@
   --radius-lg: var(--r-lg);
 }
 
-/* ─── UETMAA Premium Design System (Light & Dark Themes) ─── */
+/* ─── UETMAA Light Design System ─── */
 :root {
-  /* Light Mode (Luminous White & Elegant Cyan) */
-  --primary:        #008C9E;
-  --primary-light:  #00E5FF;
-  --primary-dark:   #006B7A;
+  --primary:        #1A365D;
+  --primary-light:  #315A8A;
+  --primary-dark:   #12284C;
   --primary-foreground: #F8FAFC;
   
-  --accent:         #CCAC00;
-  --accent-light:   #FFD700;
-  --accent-dark:    #998100;
+  --accent:         #D2A83E;
+  --accent-light:   #E6C15C;
+  --accent-dark:    #A77D1E;
   --accent-foreground: #F8FAFC;
 
   --bg:             #F8FAFC;
-  --bg-card:        rgba(255, 255, 255, 0.7);
-  --bg-muted:       rgba(0, 0, 0, 0.05);
-  --border:         rgba(0, 0, 0, 0.1);
+  --bg-card:        #FFFFFF;
+  --bg-muted:       #F1F5F9;
+  --border:         #E2E8F0;
   --text:           #0F172A;
   --text-muted:     #64748B;
 
@@ -63,15 +62,15 @@
   --warning:        #D97706;
 
   --grad-hero:  linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 50%, #CBD5E1 100%);
-  --grad-primary: linear-gradient(135deg, #006B7A 0%, #008C9E 100%);
-  --grad-gold:  linear-gradient(135deg, #998100 0%, #CCAC00 50%, #FFE55C 100%);
-  --grad-card:  linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 100%);
+  --grad-primary: linear-gradient(135deg, #12284C 0%, #1A365D 100%);
+  --grad-gold:  linear-gradient(135deg, #A77D1E 0%, #D2A83E 50%, #F2D98B 100%);
+  --grad-card:  linear-gradient(145deg, #FFFFFF 0%, #F8FAFC 100%);
 
   --shadow-sm:  0 4px 6px -1px rgba(0, 0, 0, 0.05);
   --shadow-md:  0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-lg:  0 20px 25px -5px rgba(0, 0, 0, 0.15);
-  --shadow-glow:0 0 20px rgba(0, 140, 158, 0.2);
-  --shadow-glow-gold:0 0 25px rgba(204, 172, 0, 0.2);
+  --shadow-glow:0 0 20px rgba(26, 54, 93, 0.12);
+  --shadow-glow-gold:0 0 25px rgba(210, 168, 62, 0.16);
 
   --font-head: var(--font-outfit, 'Outfit', sans-serif);
   --font-body: var(--font-inter, 'Inter', sans-serif);
@@ -91,44 +90,9 @@
   --space-3xl: 64px;
 }
 
-.dark {
-  /* Dark Mode (Midnight Obsidian & Luminous Gold) */
-  --primary:        #00E5FF;
-  --primary-light:  #80F2FF;
-  --primary-dark:   #008C9E;
-  --primary-foreground: #0B0F19;
-  
-  --accent:         #FFD700;
-  --accent-light:   #FFE55C;
-  --accent-dark:    #CCAC00;
-  --accent-foreground: #0B0F19;
-
-  --bg:             #0B0F19;
-  --bg-card:        rgba(255, 255, 255, 0.03);
-  --bg-muted:       rgba(255, 255, 255, 0.05);
-  --border:         rgba(255, 255, 255, 0.08);
-  --text:           #F8FAFC;
-  --text-muted:     #94A3B8;
-
-  --success:        #10B981;
-  --error:          #EF4444;
-  --warning:        #F59E0B;
-
-  --grad-hero:  linear-gradient(135deg, #0B0F19 0%, #111827 50%, #0F172A 100%);
-  --grad-primary: linear-gradient(135deg, #008C9E 0%, #00E5FF 100%);
-  --grad-gold:  linear-gradient(135deg, #CCAC00 0%, #FFD700 50%, #FFE55C 100%);
-  --grad-card:  linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
-
-  --shadow-sm:  0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-md:  0 10px 15px -3px rgba(0, 0, 0, 0.4);
-  --shadow-lg:  0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  --shadow-glow:0 0 20px rgba(0, 229, 255, 0.35);
-  --shadow-glow-gold:0 0 25px rgba(255, 215, 0, 0.35);
-}
-
 @layer base {
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html { color-scheme: light; scroll-behavior: smooth; }
 
   body {
     font-family: var(--font-body);

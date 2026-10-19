@@ -13,11 +13,9 @@ import {
   Megaphone,
   CheckCircle2,
   CalendarCheck,
-  CreditCard,
 } from 'lucide-react'
 import Link from 'next/link'
 import { AvatarViewer } from '@/components/profile/avatar-viewer'
-import { ThemeToggle } from '@/components/theme-toggle'
 
 // Mock Data for the prototype based on the image
 const upcomingEvents = [
@@ -60,14 +58,43 @@ const recentActivity = [
   },
 ]
 
-export function AlumniDashboard({ alumniData }: { alumniData: any }) {
+interface AlumniDashboardData {
+  firstName: string;
+  lastName: string;
+  program: string;
+  graduationYear: number;
+  avatarUrl?: string | null;
+  phone?: string | null;
+  cnic?: string | null;
+  currentEmployer?: string | null;
+  jobTitle?: string | null;
+  industry?: string | null;
+  city?: string | null;
+  country?: string | null;
+  linkedinUrl?: string | null;
+  skills?: string[] | null;
+  verificationStatus?: string | null;
+  rejectionReason?: string | null;
+  verifiedAt?: Date | string | null;
+  createdAt: Date | string;
+}
+
+type CompletionField = {
+  key: keyof Pick<
+    AlumniDashboardData,
+    'phone' | 'cnic' | 'currentEmployer' | 'jobTitle' | 'industry' | 'city' | 'country' | 'linkedinUrl'
+  >
+  label: string
+}
+
+export function AlumniDashboard({ alumniData }: { alumniData: AlumniDashboardData }) {
   // 1. Dynamic Welcome Info
   const initials = `${alumniData.firstName?.[0] || ''}${alumniData.lastName?.[0] || ''}`
   const fullName = `${alumniData.firstName} ${alumniData.lastName}`
   const formattedDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
   
   // 2. Profile Completion Algorithm
-  const fieldsToCheck = [
+  const fieldsToCheck: CompletionField[] = [
     { key: 'phone', label: 'Phone Number' },
     { key: 'cnic', label: 'CNIC' },
     { key: 'currentEmployer', label: 'Current Employer' },
@@ -120,7 +147,6 @@ export function AlumniDashboard({ alumniData }: { alumniData: any }) {
         <header className="flex items-center justify-between px-8 py-4 bg-white dark:bg-[#1a2b4c] border-b border-gray-200 dark:border-[#2a3b5c] transition-colors">
           <h2 className="text-2xl font-bold text-[#1a365d] dark:text-white transition-colors">Dashboard</h2>
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <Link href="/profile">
               <AvatarViewer 
                 avatarUrl={alumniData.avatarUrl} 
@@ -156,6 +182,16 @@ export function AlumniDashboard({ alumniData }: { alumniData: any }) {
               {/* Decorative background element */}
               <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-[#234b82] to-transparent opacity-50 rounded-r-2xl pointer-events-none"></div>
             </div>
+
+            {alumniData.verificationStatus === 'REJECTED' && (
+              <section role="alert" className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-900">
+                <h2 className="font-semibold">Your alumni verification needs attention</h2>
+                <p className="mt-1 text-sm">{alumniData.rejectionReason || 'Please review and correct your alumni identity details.'}</p>
+                <Link href="/profile/edit" className="mt-3 inline-flex min-h-10 items-center rounded-md bg-[#16345c] px-4 text-sm font-semibold text-white hover:bg-[#214779]">
+                  Correct details and resubmit
+                </Link>
+              </section>
+            )}
 
             {/* Top Cards Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 delay-100 anim-fadeInUp">

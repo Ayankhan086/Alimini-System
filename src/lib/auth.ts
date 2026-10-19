@@ -27,11 +27,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email: String(credentials.email).trim().toLowerCase() },
           include: { alumni: true },
         });
 
-        if (!user) {
+        if (!user || !user.isActive) {
           throw new InvalidCredentialsError("Invalid email or password.");
         }
 
@@ -47,7 +47,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return {
           id: user.id,
           email: user.email,
-          name: user.alumni ? `${user.alumni.firstName} ${user.alumni.lastName}` : "Admin",
+          name: user.alumni
+            ? `${user.alumni.firstName} ${user.alumni.lastName}`
+            : (user.role === "SUPER_ADMIN" || user.role === "SUB_ADMIN" ? "Administrator" : "User"),
           role: user.role,
           verificationStatus: user.alumni?.verificationStatus,
           firstName: user.alumni?.firstName,

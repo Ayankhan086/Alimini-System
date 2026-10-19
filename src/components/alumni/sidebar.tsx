@@ -27,8 +27,8 @@ const menuItems: MenuItem[] = [
   { icon: User, label: 'My Profile', href: '/profile' },
   { icon: Users, label: 'Alumni Directory', href: '/dashboard/directory' },
   { icon: CalendarDays, label: 'Events', href: '/dashboard/events' },
-  { icon: CreditCard, label: 'Membership', href: '/dashboard/membership' },
-  { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
+  { icon: CreditCard, label: 'Digital ID & Membership', href: '/dashboard/membership' },
+  { icon: Settings, label: 'Security', href: '/dashboard/security' },
 ]
 
 export function Sidebar() {

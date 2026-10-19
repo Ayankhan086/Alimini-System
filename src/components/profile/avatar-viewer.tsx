@@ -21,24 +21,28 @@ export function AvatarViewer({ avatarUrl, initials, fullName, size = 'lg', inter
   const [isUpdating, setIsUpdating] = useState(false)
   const router = useRouter()
 
-  const handleUploadSuccess = async (result: any) => {
+  const handleUploadSuccess = async (result: unknown) => {
     setIsUpdating(true)
-    const newAvatarUrl = result.info.secure_url
+    if (typeof result === 'object' && result && 'info' in result && typeof result.info === 'object' && result.info && 'secure_url' in result.info) {
+      const newAvatarUrl = (result.info as { secure_url: string }).secure_url
 
-    try {
-      const res = await fetch('/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ avatarUrl: newAvatarUrl }),
-      })
+      try {
+        const res = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatarUrl: newAvatarUrl }),
+        })
 
-      if (res.ok) {
-        router.refresh()
-        setIsOpen(false) // Close modal on success
+        if (res.ok) {
+          router.refresh()
+          setIsOpen(false) // Close modal on success
+        }
+      } catch (error) {
+        console.error('Failed to update avatar', error)
+      } finally {
+        setIsUpdating(false)
       }
-    } catch (error) {
-      console.error('Failed to update avatar', error)
-    } finally {
+    } else {
       setIsUpdating(false)
     }
   }

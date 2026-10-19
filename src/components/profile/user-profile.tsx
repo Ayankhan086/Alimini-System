@@ -9,50 +9,75 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import { AvatarViewer } from '@/components/profile/avatar-viewer'
-import { ThemeToggle } from '@/components/theme-toggle'
 
-function ProfileContent({ initialData }: { initialData: any }) {
+interface UserProfileData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string | null;
+  jobTitle?: string | null;
+  currentEmployer?: string | null;
+  industry?: string | null;
+  city?: string | null;
+  country?: string | null;
+  linkedinUrl?: string | null;
+  phone?: string | null;
+  cnic?: string | null;
+  skills: string[];
+  degreeLevel?: string | null;
+  program?: string | null;
+  admissionYear: number;
+  graduationYear: number;
+  cgpa: number | null;
+  rollNumber?: string | null;
+  verificationStatus?: string | null;
+}
+
+function ProfileContent({ initialData }: { initialData: UserProfileData }) {
   const searchParams = useSearchParams()
-  const [showSuccess, setShowSuccess] = useState(false)
+  const isUpdated = searchParams.get('updated') === 'true'
+  const [dismissed, setDismissed] = useState(false)
+  const showSuccess = isUpdated && !dismissed
 
   useEffect(() => {
-    if (searchParams.get('updated') === 'true') {
-      setShowSuccess(true)
-      const timer = setTimeout(() => setShowSuccess(false), 5000)
+    if (isUpdated) {
+      const timer = setTimeout(() => setDismissed(true), 5000)
       return () => clearTimeout(timer)
     }
-  }, [searchParams])
+  }, [isUpdated])
+
+  const profile = initialData || {}
 
   // Process data for display
-  const initials = `${initialData.firstName?.[0] || ''}${initialData.lastName?.[0] || ''}`
-  const fullName = `${initialData.firstName} ${initialData.lastName}`
-  const jobTitle = initialData.jobTitle || 'Alumni'
-  const employer = initialData.currentEmployer ? `at ${initialData.currentEmployer}` : ''
-  const location = initialData.city && initialData.country 
-    ? `· ${initialData.city}, ${initialData.country}` 
+  const initials = `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`
+  const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || 'Alumni'
+  const jobTitle = profile.jobTitle || 'Alumni'
+  const employer = profile.currentEmployer ? `at ${profile.currentEmployer}` : ''
+  const location = profile.city && profile.country
+    ? `· ${profile.city}, ${profile.country}`
     : ''
   
   // Real Profile Completion Algorithm
   const fieldsToCheck = [
-    { key: 'phone' },
-    { key: 'cnic' },
-    { key: 'currentEmployer' },
-    { key: 'jobTitle' },
-    { key: 'industry' },
-    { key: 'city' },
-    { key: 'country' },
-    { key: 'linkedinUrl' },
-  ]
+    'phone',
+    'cnic',
+    'currentEmployer',
+    'jobTitle',
+    'industry',
+    'city',
+    'country',
+    'linkedinUrl',
+  ] as const
 
   let filledCount = 0
-  fieldsToCheck.forEach(field => {
-    if (initialData[field.key]) {
+  fieldsToCheck.forEach((key) => {
+    if (profile[key]) {
       filledCount++
     }
   })
 
   // Add skills check
-  if (initialData.skills && initialData.skills.length > 0) {
+  if (profile.skills && profile.skills.length > 0) {
     filledCount++
   }
 
@@ -65,7 +90,6 @@ function ProfileContent({ initialData }: { initialData: any }) {
       <header className="flex items-center justify-between px-8 py-5 bg-white dark:bg-[#1a2b4c] shadow-sm border-b border-gray-100 dark:border-[#2a3b5c] z-10 transition-colors">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">My Profile</h2>
         <div className="flex items-center gap-4">
-          <ThemeToggle />
           <AvatarViewer 
             avatarUrl={initialData.avatarUrl} 
             initials={initials} 
@@ -217,7 +241,7 @@ function ProfileContent({ initialData }: { initialData: any }) {
   )
 }
 
-export function UserProfile({ initialData }: { initialData: any }) {
+export function UserProfile({ initialData }: { initialData: UserProfileData }) {
   return (
     <div className="flex h-screen bg-[#f8fafc] dark:bg-[#0B0F19] transition-colors">
       {/* Sidebar for Alumni */}
